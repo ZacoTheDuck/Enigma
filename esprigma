@@ -1,11 +1,14 @@
 /*
 @title: Enigma
 @author: Zaco/Ben G
-@tags: []
+@tags: ['simulation', 'sandbox']
 @addedOn: 2024-07-27
 */
 
+//tile definitions
 const cursor = "C"
+const divider = "D"
+const button = "B"
 const a = "a"
 const b = "b"
 const c = "c"
@@ -32,24 +35,64 @@ const w = "w"
 const x = "x"
 const y = "y"
 const z = "z"
+const plug1 = ">"
+const plug2 = "<"
+const scramTop = "1"
+const scramMid = "2"
+const scramBot = "3"
+const light = "L"
 
 setLegend(
   [cursor, bitmap`
+3333333333333333
+3333333333333333
+33............33
+33............33
+33............33
+33............33
+33............33
+33............33
+33............33
+33............33
+33............33
+33............33
+33............33
+33............33
+3333333333333333
+3333333333333333`],
+  [button, bitmap`
+....00000000....
+...0........0...
+..0..........0..
+.0............0.
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+0..............0
+.0............0.
+..0..........0..
+...0........0...
+....00000000....`],
+  [divider, bitmap`
 0000000000000000
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
-0..............0
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
 0000000000000000`],
   [a, bitmap`
 ................
@@ -492,24 +535,171 @@ setLegend(
 ................
 ................
 ................
-................`]
+................`],
+  [plug1, bitmap`
+................
+....55555555....
+...5555555555...
+..555555555555..
+.55555555555555.
+.55555555555555.
+.55555555555555.
+.55555555555555.
+.55555555555555.
+.55555555555555.
+.55555555555555.
+.55555555555555.
+..555555555555..
+...5555555555...
+....55555555....
+................`],
+  [plug2, bitmap`
+................
+....DDDDDDDD....
+...DDDDDDDDDD...
+..DDDDDDDDDDDD..
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+..DDDDDDDDDDDD..
+...DDDDDDDDDD...
+....DDDDDDDD....
+................`],
+  [scramTop, bitmap`
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111`],
+  [scramMid, bitmap`
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL
+LLLLLLLLLLLLLLLL`],
+  [scramBot, bitmap`
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111
+1111111111111111`],
+  [light, bitmap`
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666`]
 )
 
-setSolids([])
+setSolids([cursor, divider])
 
-let level = 1
+//map definitions
+let level = 0
 const levels = [
   map`
-abcdefghi
-jklmnopqr
-stuvwxyzC`, //keyboard, alphabetic order
-  map`
+..........
+....1.1.1.
+....2.2.2.
+....1.1.1.
 qwertyuiop
 asdfghjkl.
-Czxcvbnm..` //keyboard, qwerty
+.zxcvbnm..
+DDDDDDDDDD
+qwertyuiop
+asdfghjkl.
+Czxcvbnm..`, //qwerty keboard
 ]
 
 setMap(levels[level])
+if(level == 0) {
+  //placeholder, replace with alphebatized scrambler rotations
+  addSprite(4, 1, b)
+  addSprite(4, 2, a)
+  addSprite(4, 3, z)
+  addSprite(6, 1, b)
+  addSprite(6, 2, a)
+  addSprite(6, 3, z)
+  addSprite(8, 1, b)
+  addSprite(8, 2, a)
+  addSprite(8, 3, z)
+  
+  addSprite(0, 8, button)
+  addSprite(1, 8, button)
+  addSprite(2, 8, button)
+  addSprite(3, 8, button)
+  addSprite(4, 8, button)
+  addSprite(5, 8, button)
+  addSprite(6, 8, button)
+  addSprite(7, 8, button)
+  addSprite(8, 8, button)
+  addSprite(9, 8, button)
+  addSprite(0, 9, button)
+  addSprite(1, 9, button)
+  addSprite(2, 9, button)
+  addSprite(3, 9, button)
+  addSprite(4, 9, button)
+  addSprite(5, 9, button)
+  addSprite(6, 9, button)
+  addSprite(7, 9, button)
+  addSprite(8, 9, button)
+  addSprite(1, 10, button)
+  addSprite(2, 10, button)
+  addSprite(3, 10, button)
+  addSprite(4, 10, button)
+  addSprite(5, 10, button)
+  addSprite(6, 10, button)
+  addSprite(7, 10, button)
+}
+
 
 //WASD
 onInput("w", () => {
