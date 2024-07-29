@@ -7,8 +7,8 @@ function constrain(constrainee) {
     else return constrainee;
 }
 
-var letterInput; //inputted letter, a-z
-var letter = dealphabetize(letterInput) + 1; //number value of inputted letter, 1-26
+var letterInput = "e"; //inputted letter, a-z
+var letter = dealphabetize(letterInput); //number value of inputted letter, 1-26
 
 var rotations = [0, 0, 0]; //rotations of scramblers in wheel order, 0-25
 
@@ -26,6 +26,7 @@ var wheelOrder = [1, 2, 3]
 const scramList1 = [17, 6, 4, 22, 8, 26, 7, 3, 11, 14, 20, 18, 10, 19, 9, 23, 12, 21, 16, 1, 5, 24, 2, 13, 25, 15] //sequential array of scrambler 1's 26 outputs at rotation 0. remember, arrays start at 0
 const scramList2 = [3, 17, 16, 12, 14, 5, 8, 22, 9, 19, 2, 23, 10, 15, 7, 26, 24, 18, 21, 25, 6, 11, 13, 20, 4, 1]
 const scramList3 = [3, 23, 14, 1, 11, 6, 9, 2, 5, 18, 10, 24, 12, 13, 16, 21, 8, 22, 25, 17, 4, 15, 20, 26, 19, 7]
+
 const reflectList = [21, 17, 11, 10, 6, 25, 15, 26, 18, 22, 14, 3, 9, 23, 8, 24, 5, 16, 13, 20, 7, 19, 2, 4, 12, 1] //even indexes go to the next on the array, odd go back (starting at 0)
 
 function scrambler1 (rot, reflected) {
@@ -59,8 +60,10 @@ function switchboard() {
     else if (letter == plug4) {letter = plug3;}
 }
 
-function scramble(reflected) { //reflected is false if signal hasn't gone through the reflector yet, true if it has
-    for (let letterPos = (0 + (2* reflected)); letterPos < 3 || letterPos >= reflected - 1; letterPos += 1 - (2 * reflected);) {//check scrambler of current position, execute, change position, repeat three times. if reflected true, start at third scrambler and go backwards
+function scramble(reflected) {
+    for (let letterPos = (0 + (2 * reflected)); letterPos < 3 && letterPos >= reflected - 1; letterPos += 1 - (2 * reflected)) {
+        //check scrambler of current position, execute, change position, repeat three times.
+        //if reflected true, start at third scrambler and go backwards
         if (wheelOrder[letterPos] == 1) {scrambler1(rotations[letterPos], reflected);}
         else if (wheelOrder[letterPos] == 2) {scrambler2(rotations[letterPos], reflected);}
         else if (wheelOrder[letterPos] == 3) {scrambler3(rotations[letterPos], reflected);}
@@ -68,8 +71,10 @@ function scramble(reflected) { //reflected is false if signal hasn't gone throug
 }
 
 function reflector() {
-    if (scramList1.indexOf(letter) % 2 == 0) {letter = reflectList[scramList1.indexOf(letter) + 1];} //if letter's position in array is even, move to next index
-    else {letter = reflectList[scramList1.indexOf(letter) - 1];} //if letter's position in array is odd, move down an index
+    //if letter's position in array is even, move to next index
+    if (reflectList.indexOf(letter) % 2 == 0) {letter = reflectList[reflectList.indexOf(letter) + 1];} 
+    //if letter's position in array is odd, move to previous index
+    else {letter = reflectList[reflectList.indexOf(letter) - 1];}
 }
 
 function rotate(){
@@ -93,3 +98,5 @@ function executeEnigma() {
     switchboard();
     rotate();
 }
+
+executeEnigma()
