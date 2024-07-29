@@ -677,47 +677,6 @@ asdfghjkl.
 Czxcvbnm..`, //qwerty keboard
 ]
 
-setMap(levels[level])
-if(level == 0) {
-  //placeholder, replace with alphebatized scrambler rotations
-  addSprite(4, 1, b)
-  addSprite(4, 2, a)
-  addSprite(4, 3, z)
-  addSprite(6, 1, b)
-  addSprite(6, 2, a)
-  addSprite(6, 3, z)
-  addSprite(8, 1, b)
-  addSprite(8, 2, a)
-  addSprite(8, 3, z)
-  
-  addSprite(0, 8, button)
-  addSprite(1, 8, button)
-  addSprite(2, 8, button)
-  addSprite(3, 8, button)
-  addSprite(4, 8, button)
-  addSprite(5, 8, button)
-  addSprite(6, 8, button)
-  addSprite(7, 8, button)
-  addSprite(8, 8, button)
-  addSprite(9, 8, button)
-  addSprite(0, 9, button)
-  addSprite(1, 9, button)
-  addSprite(2, 9, button)
-  addSprite(3, 9, button)
-  addSprite(4, 9, button)
-  addSprite(5, 9, button)
-  addSprite(6, 9, button)
-  addSprite(7, 9, button)
-  addSprite(8, 9, button)
-  addSprite(1, 10, button)
-  addSprite(2, 10, button)
-  addSprite(3, 10, button)
-  addSprite(4, 10, button)
-  addSprite(5, 10, button)
-  addSprite(6, 10, button)
-  addSprite(7, 10, button)
-}
-
 const alphabet = "abcdefghijklmnopqrstuvwxyz"; //it's just the alphabet.
 function alphabetize(inNumber) {return alphabet.charAt(inNumber - 1);} //number to letter
 function dealphabetize(inCharacter) {return (alphabet.indexOf(inCharacter) + 1);} //letter to number
@@ -745,7 +704,9 @@ var wheelOrder = [1, 2, 3]
 const scramList1 = [17, 6, 4, 22, 8, 26, 7, 3, 11, 14, 20, 18, 10, 19, 9, 23, 12, 21, 16, 1, 5, 24, 2, 13, 25, 15] //sequential array of scrambler 1's 26 outputs at rotation 0. remember, arrays start at 0
 const scramList2 = [3, 17, 16, 12, 14, 5, 8, 22, 9, 19, 2, 23, 10, 15, 7, 26, 24, 18, 21, 25, 6, 11, 13, 20, 4, 1]
 const scramList3 = [3, 23, 14, 1, 11, 6, 9, 2, 5, 18, 10, 24, 12, 13, 16, 21, 8, 22, 25, 17, 4, 15, 20, 26, 19, 7]
+
 const reflectList = [21, 17, 11, 10, 6, 25, 15, 26, 18, 22, 14, 3, 9, 23, 8, 24, 5, 16, 13, 20, 7, 19, 2, 4, 12, 1] //even indexes go to the next on the array, odd go back (starting at 0)
+
 
 function scrambler1 (rot, reflected) {
     //account for scrambler's rotation
@@ -779,7 +740,7 @@ function switchboard() {
 }
 
 function scramble(reflected) {
-    for (let letterPos = 0 + (2* reflected); letterPos < 3 || letterPos >= reflected - 1; letterPos += 1 - (2 * reflected)) {
+    for (let letterPos = 0 + (2 * reflected); letterPos < 3 && letterPos >= reflected - 1; letterPos += 1 - (2 * reflected)) {
       //check scrambler of current position, execute, change position, repeat three times.
       //if reflected true, start at third scrambler and go backwards
         if (wheelOrder[letterPos] == 1) {scrambler1(rotations[letterPos], reflected);}
@@ -789,8 +750,8 @@ function scramble(reflected) {
 }
 
 function reflector() {
-    if (scramList1.indexOf(letter) % 2 == 0) {letter = reflectList[scramList1.indexOf(letter) + 1];} //if letter's position in array is even, move to next index
-    else {letter = reflectList[scramList1.indexOf(letter) - 1];} //if letter's position in array is odd, move down an index
+    if (reflectList.indexOf(letter) % 2 == 0) {letter = reflectList[reflectList.indexOf(letter) + 1];} //if letter's position in array is even, move to next index
+    else {letter = reflectList[reflectList.indexOf(letter) - 1];} //if letter's position in array is odd, move down an index
 }
 
 function rotate(){
@@ -814,6 +775,57 @@ function executeEnigma() {
     switchboard();
     rotate();
 }
+
+setMap(levels[level]) //make it look nice
+if(level == 0) { 
+  addSprite(0, 8, button)
+  addSprite(1, 8, button)
+  addSprite(2, 8, button)
+  addSprite(3, 8, button)
+  addSprite(4, 8, button)
+  addSprite(5, 8, button)
+  addSprite(6, 8, button)
+  addSprite(7, 8, button)
+  addSprite(8, 8, button)
+  addSprite(9, 8, button)
+  addSprite(0, 9, button)
+  addSprite(1, 9, button)
+  addSprite(2, 9, button)
+  addSprite(3, 9, button)
+  addSprite(4, 9, button)
+  addSprite(5, 9, button)
+  addSprite(6, 9, button)
+  addSprite(7, 9, button)
+  addSprite(8, 9, button)
+  addSprite(1, 10, button)
+  addSprite(2, 10, button)
+  addSprite(3, 10, button)
+  addSprite(4, 10, button)
+  addSprite(5, 10, button)
+  addSprite(6, 10, button)
+  addSprite(7, 10, button)
+  updateScramblers()
+}
+
+function updateScramblers() { //change letters on scramblers to match rotations
+  for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
+    for (let scramblerY = 1; scramblerY <= 3; scramblerY++) {
+      clearTile((8-(2*scramblerNum)), scramblerY)
+      if (scramblerY == 1) {
+        addSprite((8-(2*scramblerNum)), 1, scramTop)
+      }
+      else if (scramblerY == 2) {
+        addSprite((8-(2*scramblerNum)), 2, scramMid)
+      }
+      else {
+        addSprite((8-(2*scramblerNum)), 3, scramBot)
+      }
+      addSprite((8-(2*scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum]+3-scramblerY)))
+    }
+  }
+}
+
+updateScramblers()
 
 //WASD
 onInput("w", () => {
@@ -842,8 +854,10 @@ onInput("l", () => {
       letter = letterChecked;
     }
   }
+  executeEnigma()
   addText(alphabetize(letter), { 
   x: 10,
-  y: 4,
+  y: 0,
   color: color`3`})
+  updateScramblers();
 })
