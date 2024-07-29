@@ -640,6 +640,10 @@ setLegend(
 ..111111111111..
 ..111111111111..`],
   [light, bitmap`
+....66666666....
+...6666666666...
+..666666666666..
+.66666666666666.
 6666666666666666
 6666666666666666
 6666666666666666
@@ -648,14 +652,10 @@ setLegend(
 6666666666666666
 6666666666666666
 6666666666666666
-6666666666666666
-6666666666666666
-6666666666666666
-6666666666666666
-6666666666666666
-6666666666666666
-6666666666666666
-6666666666666666`]
+.66666666666666.
+..666666666666..
+...6666666666...
+....66666666....`]
 )
 
 setSolids([cursor, divider])
@@ -678,13 +678,20 @@ Czxcvbnm..`, //qwerty keboard
 ]
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"; //it's just the alphabet.
-function alphabetize(inNumber) {return alphabet.charAt(inNumber - 1);} //number to letter
-function dealphabetize(inCharacter) {return (alphabet.indexOf(inCharacter) + 1);} //letter to number
+const alphabetCapital = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //alphabet but capitalized
+//number to letter
+function alphabetize(inNumber) {return alphabet.charAt(inNumber - 1);}
+//letter to number
+function dealphabetize(inCharacter) {return (alphabet.indexOf(inCharacter) + 1);}
+//makes a lowercase letter capital
+function capitalize(inCharacter) {return (alphabetCapital.charAt(alphabet.indexOf(inCharacter)));}
+//puts a number within alphabet if it's at most 1 alphabet away
 function constrain(constrainee) {
     if (constrainee < 1) {return constrainee + 26;}
     else if (constrainee > 26) {return constrainee - 26;}
     else return constrainee;
 }
+
 
 var letter; //number value of inputted letter, 1-26
 
@@ -706,6 +713,8 @@ const scramList2 = [3, 17, 16, 12, 14, 5, 8, 22, 9, 19, 2, 23, 10, 15, 7, 26, 24
 const scramList3 = [3, 23, 14, 1, 11, 6, 9, 2, 5, 18, 10, 24, 12, 13, 16, 21, 8, 22, 25, 17, 4, 15, 20, 26, 19, 7]
 
 const reflectList = [21, 17, 11, 10, 6, 25, 15, 26, 18, 22, 14, 3, 9, 23, 8, 24, 5, 16, 13, 20, 7, 19, 2, 4, 12, 1] //even indexes go to the next on the array, odd go back (starting at 0)
+
+var ciphertext = ""
 
 
 function scrambler1 (rot, reflected) {
@@ -841,10 +850,6 @@ onInput("d", () => {
   getFirst(cursor).x += 1
 })
 
-afterInput(() => {
-  
-})
-
 //select input letter
 onInput("l", () => {
   letter = 0
@@ -854,10 +859,27 @@ onInput("l", () => {
       letter = letterChecked;
     }
   }
-  executeEnigma()
-  addText(alphabetize(letter), { 
-  x: 10,
-  y: 0,
-  color: color`3`})
-  updateScramblers();
+  //if you aren't on blank space
+  if (letter != 0) {
+      executeEnigma()
+    //get rid of previous light, if there is one
+    if (getAll(light).length != 0) {
+      getFirst(light).remove()
+    }
+    //add light to output letter
+    addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
+    //graft new output onto end of previous outputs, or start list of outputs
+    if (ciphertext.length == 0) {
+      ciphertext = capitalize(alphabetize(letter))
+    }
+    else ciphertext = ciphertext + capitalize(alphabetize(letter))
+    //list outputs
+    addText(ciphertext, { 
+    x: 3,
+    y: 0,
+    color: color`3`})
+  
+    updateScramblers();
+  }
+
 })
