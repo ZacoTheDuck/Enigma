@@ -692,19 +692,32 @@ function constrain(constrainee) {
     else return constrainee;
 }
 
+var explain = true //boolean, when true machine goes step-by-step with explanations
+var explanation = "" //string used to explain things
+function explanationText(text) {
+  addText(text, {
+    x: 3,
+    y: 0,
+    color: color`3`})
+}
+
+function waitForL(){
+  for (let lPressed = false; lPressed == false; lPressed += 0) {
+    onInput("l", () => {
+      lPressed = true
+    })
+  }
+}
+  
 
 var letter; //number value of inputted letter, 1-26
 
 var rotations = [0, 0, 0]; //rotations of scramblers in wheel order, 0-25
 
-var plugIn1; //inputted plug 1 letter, a-z
-var plugIn2;
-var plugIn3;
-var plugIn4;
-var plug1 = dealphabetize(plugIn1); //switchboard, swaps with plug2 at beginning and end, 1-26 or 0 for off
-var plug2 = dealphabetize(plugIn2); //switchboard, swaps with plug1
-var plug3 = dealphabetize(plugIn3); //switchboard, swaps with plug4
-var plug4 = dealphabetize(plugIn4); //switchboard, swaps with plug3
+var plug1 //switchboard, swaps with plug2 at beginning and end, 1-26 or 0 for off
+var plug2 //switchboard, swaps with plug1
+var plug3 //switchboard, swaps with plug4
+var plug4 //switchboard, swaps with plug3
 
 var wheelOrder = [1, 2, 3]
 
@@ -752,9 +765,37 @@ function scramble(reflected) {
     for (let letterPos = 0 + (2 * reflected); letterPos < 3 && letterPos >= reflected - 1; letterPos += 1 - (2 * reflected)) {
       //check scrambler of current position, execute, change position, repeat three times.
       //if reflected true, start at third scrambler and go backwards
-        if (wheelOrder[letterPos] == 1) {scrambler1(rotations[letterPos], reflected);}
-        else if (wheelOrder[letterPos] == 2) {scrambler2(rotations[letterPos], reflected);}
-        else if (wheelOrder[letterPos] == 3) {scrambler3(rotations[letterPos], reflected);}
+        if (wheelOrder[letterPos] == 1) {
+          scrambler1(rotations[letterPos], reflected);
+        }
+        else if (wheelOrder[letterPos] == 2) {
+          scrambler2(rotations[letterPos], reflected);
+        }
+        else if (wheelOrder[letterPos] == 3) {
+          scrambler3(rotations[letterPos], reflected);
+        }
+    }
+}
+
+function scrambleExplained(reflected) {
+    for (let letterPos = 0 + (2 * reflected); letterPos < 3 && letterPos >= reflected - 1; letterPos += 1 - (2 * reflected)) {
+        explanation = alphabetize(letter)
+        if (wheelOrder[letterPos] == 1) {
+          explanation += ">scram1>"
+          scrambler1(rotations[letterPos], reflected);
+        }
+        else if (wheelOrder[letterPos] == 2) {
+          explanation += ">scram2>"
+          scrambler2(rotations[letterPos], reflected);
+        }
+        else if (wheelOrder[letterPos] == 3) {
+          explanation += ">scram3>"
+          scrambler3(rotations[letterPos], reflected);
+        }
+        explanation += alphabetize(letter)
+        explanationText(explanation)
+        //wait until l is pressed to continue
+        waitForL()
     }
 }
 
@@ -852,34 +893,103 @@ onInput("d", () => {
 
 //select input letter
 onInput("l", () => {
-  letter = 0
-  for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
-    //check if cursor x and y are the same as letter x and y
-    if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
-      letter = letterChecked;
+  if (explain == false) {
+    letter = 0
+    for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
+      //check if cursor x and y are the same as letter x and y
+      if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
+        letter = letterChecked;
+      }
+    }
+    //if you aren't on blank space
+    if (letter != 0) {
+        executeEnigma()
+      //get rid of previous light, if there is one
+      if (getAll(light).length != 0) {
+        getFirst(light).remove()
+      }
+      //add light to output letter
+      addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
+      //start list of outputs or graft new output onto list
+      if (ciphertext.length == 0) {
+        ciphertext = capitalize(alphabetize(letter))
+      }
+      else ciphertext = ciphertext + capitalize(alphabetize(letter))
+      //if it's too long to fit, trim the first letter
+      if (ciphertext.length >= 15) {ciphertext = ciphertext.replace(ciphertext.charAt(0), "")}
+      //list outputs
+      addText(ciphertext, {
+      x: 3,
+      y: 0,
+      color: color`3`})
+    
+      updateScramblers();
     }
   }
-  //if you aren't on blank space
-  if (letter != 0) {
-      executeEnigma()
-    //get rid of previous light, if there is one
-    if (getAll(light).length != 0) {
-      getFirst(light).remove()
-    }
-    //add light to output letter
-    addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
-    //graft new output onto end of previous outputs, or start list of outputs
-    if (ciphertext.length == 0) {
-      ciphertext = capitalize(alphabetize(letter))
-    }
-    else ciphertext = ciphertext + capitalize(alphabetize(letter))
-    //list outputs
-    addText(ciphertext, { 
-    x: 3,
-    y: 0,
-    color: color`3`})
   
-    updateScramblers();
-  }
+  //when explain is true, slower and with explanations
+  else {
+    letter = 0
+    for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
+      //check if cursor x and y are the same as letter x and y
+      if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
+        letter = letterChecked;
+      }
+    }
+    //if you aren't on blank space
+    if (letter != 0) {
+      //get rid of previous light, if there is one
+      if (getAll(light).length != 0) {
+        getFirst(light).remove()
+      }
 
+      //get rid of line of ciphertext, if it's there
+      clearText()
+      
+      //execute enigma but with pauses and explanations
+      explanation = alphabetize(letter) + ">switch>"
+      switchboard()
+      explanation += alphabetize(letter)
+      explanationText(explanation)
+      waitForL()
+      
+      scrambleExplained(false)
+      
+      explanation = aphabetize(letter) + ">reflect>"
+      reflector()
+      explanation += alphabetize(letter)
+      explanationText(explanation)
+      waitForL()
+
+      scrambleExplained(true)
+
+      explanation = alphabetize(letter) + ">switch>"
+      switchboard()
+      explanation += alphabetize(letter)
+      explanationText(explanation)
+      waitForL()
+      
+      //add light to output letter
+      addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
+      
+      rotate()
+      updateScramblers()
+      explanationText("scramblers rotate")
+      waitForL
+      
+      //start list of outputs or graft new output onto list
+      clearText()
+      if (ciphertext.length == 0) {
+        ciphertext = capitalize(alphabetize(letter))
+      }
+      else ciphertext = ciphertext + capitalize(alphabetize(letter))
+      //if it's too long to fit, trim the first letter
+      if (ciphertext.length >= 15) {ciphertext = ciphertext.replace(ciphertext.charAt(0), "")}
+      //list outputs
+      addText(ciphertext, {
+      x: 3,
+      y: 0,
+      color: color`3`})
+    }
+  }
 })
