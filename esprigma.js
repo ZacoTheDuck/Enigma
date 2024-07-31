@@ -700,15 +700,7 @@ function explanationText(text) {
     y: 0,
     color: color`3`})
 }
-
-function waitForL(){
-  for (let lPressed = false; lPressed == false; lPressed += 0) {
-    onInput("l", () => {
-      lPressed = true
-    })
-  }
-}
-  
+var explanationStep = 0
 
 var letter; //number value of inputted letter, 1-26
 
@@ -731,27 +723,31 @@ var ciphertext = ""
 
 
 function scrambler1 (rot, reflected) {
-    //account for scrambler's rotation
-    let scramLetter = constrain(letter + rot);
-    //enigmatize that thang
-    if (reflected == false) {letter = scramList1[scramLetter - 1] - rot;}
-    else {letter = scramList1.indexOf(scramLetter) + 1 - rot;}
-    //there's only so much alphabet
-    letter = constrain(letter)
+  //account for scrambler's rotation
+  let scramLetter = constrain(letter + rot);
+  //if explaining, add the path the signal takes
+  if (explain == true) {explanation += alphabetize(scramLetter)}
+  //enigmatize that thang
+  if (reflected == false) {letter = scramList1[scramLetter - 1] - rot;}
+  else {letter = scramList1.indexOf(scramLetter) + 1 - rot;}
+  //there's only so much alphabet
+  letter = constrain(letter)
 }
 
 function scrambler2 (rot, reflected) {
-    let scramLetter = constrain(letter + rot);
-    if (reflected == false) {letter = scramList2[scramLetter - 1] - rot;}
-    else {letter = scramList2.indexOf(scramLetter) + 1 - rot;}
-    letter = constrain(letter)
+  let scramLetter = constrain(letter + rot);
+  if (explain == true) {explanation += alphabetize(scramLetter)}
+  if (reflected == false) {letter = scramList2[scramLetter - 1] - rot;}
+  else {letter = scramList2.indexOf(scramLetter) + 1 - rot;}
+  letter = constrain(letter)
 }
 
 function scrambler3 (rot, reflected) {
-    let scramLetter = constrain(letter + rot);
-    if (reflected == false) {letter = scramList3[scramLetter - 1] - rot;}
-    else {letter = scramList3.indexOf(scramLetter) + 1 - rot;}
-    letter = constrain(letter)
+  let scramLetter = constrain(letter + rot);
+  if (explain == true) {explanation += alphabetize(scramLetter)}
+  if (reflected == false) {letter = scramList3[scramLetter - 1] - rot;}
+  else {letter = scramList3.indexOf(scramLetter) + 1 - rot;}
+  letter = constrain(letter)
 }
 
 function switchboard() {
@@ -774,28 +770,6 @@ function scramble(reflected) {
         else if (wheelOrder[letterPos] == 3) {
           scrambler3(rotations[letterPos], reflected);
         }
-    }
-}
-
-function scrambleExplained(reflected) {
-    for (let letterPos = 0 + (2 * reflected); letterPos < 3 && letterPos >= reflected - 1; letterPos += 1 - (2 * reflected)) {
-        explanation = alphabetize(letter)
-        if (wheelOrder[letterPos] == 1) {
-          explanation += ">scram1>"
-          scrambler1(rotations[letterPos], reflected);
-        }
-        else if (wheelOrder[letterPos] == 2) {
-          explanation += ">scram2>"
-          scrambler2(rotations[letterPos], reflected);
-        }
-        else if (wheelOrder[letterPos] == 3) {
-          explanation += ">scram3>"
-          scrambler3(rotations[letterPos], reflected);
-        }
-        explanation += alphabetize(letter)
-        explanationText(explanation)
-        //wait until l is pressed to continue
-        waitForL()
     }
 }
 
@@ -926,57 +900,115 @@ onInput("l", () => {
       updateScramblers();
     }
   }
+
   
   //when explain is true, slower and with explanations
   else {
-    letter = 0
-    for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
-      //check if cursor x and y are the same as letter x and y
-      if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
-        letter = letterChecked;
+    if (explanationStep == 0) {
+      letter = 0
+      for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
+        //check if cursor x and y are the same as letter x and y
+        if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
+          letter = letterChecked;
+        }
       }
-    }
-    //if you aren't on blank space
-    if (letter != 0) {
-      //get rid of previous light, if there is one
-      if (getAll(light).length != 0) {
-        getFirst(light).remove()
-      }
-
+      
+      //if you aren't on blank space
+      if (letter != 0) {
+        //get rid of previous light, if there is one
+        if (getAll(light).length != 0) {
+          getFirst(light).remove()
+        }
       //get rid of line of ciphertext, if it's there
       clearText()
-      
+      explanationStep++
+      }
+    }
+
+    //should follow directly after step 0, if step 0's conditions were met
+    if (explanationStep == 1) {  
       //execute enigma but with pauses and explanations
       explanation = alphabetize(letter) + ">switch>"
       switchboard()
       explanation += alphabetize(letter)
+      clearText()
       explanationText(explanation)
-      waitForL()
-      
-      scrambleExplained(false)
-      
-      explanation = aphabetize(letter) + ">reflect>"
+      explanationStep++
+    }
+
+    //like scramble function, but with explanationStep - 2 instead of letterPos
+    else if (explanationStep >= 2 && explanationStep <= 4) {
+      explanation = alphabetize(letter)
+      if (wheelOrder[explanationStep - 2] == 1) {
+        explanation += ">scram1"
+        scrambler1(rotations[explanationStep - 2], false);
+      }
+      else if (wheelOrder[explanationStep - 2] == 2) {
+        explanation += ">scram2"
+        scrambler2(rotations[explanationStep - 2], false);
+      }
+      else if (wheelOrder[explanationStep - 2] == 3) {
+        explanation += ">scram3"
+        scrambler3(rotations[explanationStep - 2], false);
+      }
+      explanation += ">" + alphabetize(letter)
+      clearText()
+      explanationText(explanation)
+      explanationStep++
+    }
+
+    else if (explanationStep == 5) {
+      explanation = alphabetize(letter) + ">reflector>"
       reflector()
       explanation += alphabetize(letter)
+      clearText()
       explanationText(explanation)
-      waitForL()
+      explanationStep++
+    }
 
-      scrambleExplained(true)
+    //like reflected scramble, but with 8 - explanationStep instead of letterPos
+    else if (explanationStep >= 6 && explanationStep <= 8) {
+      explanation = alphabetize(letter)
+      if (wheelOrder[8 - explanationStep] == 1) {
+        explanation += ">scram1"
+        scrambler1(rotations[8 - explanationStep], true);
+      }
+      else if (wheelOrder[8 - explanationStep] == 2) {
+        explanation += ">scram2"
+        scrambler2(rotations[8 - explanationStep], true);
+      }
+      else if (wheelOrder[8 - explanationStep] == 3) {
+        explanation += ">scram3"
+        scrambler3(rotations[8 - explanationStep], true);
+      }
+      explanation += "R>" + alphabetize(letter)
+      clearText()
+      explanationText(explanation)
+      explanationStep++
+    }
 
+    else if (explanationStep == 9) {  
+      //execute enigma but with pauses and explanations
       explanation = alphabetize(letter) + ">switch>"
       switchboard()
-      explanation += alphabetize(letter)
-      explanationText(explanation)
-      waitForL()
+      explanation += capitalize(alphabetize(letter))
       
       //add light to output letter
       addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
       
+      clearText()
+      explanationText(explanation)
+      explanationStep++
+    }
+
+    else if (explanationStep == 10) {
       rotate()
       updateScramblers()
-      explanationText("scramblers rotate")
-      waitForL
-      
+      explanationText("scrams rotate")
+      explanationStep++
+    }
+
+    else if (explanationStep == 11) {
       //start list of outputs or graft new output onto list
       clearText()
       if (ciphertext.length == 0) {
@@ -990,6 +1022,7 @@ onInput("l", () => {
       x: 3,
       y: 0,
       color: color`3`})
+      explanationStep = 0
     }
   }
 })
