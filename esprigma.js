@@ -10,6 +10,8 @@ const cursor = "C"
 const reflectorTile = "R"
 const button = "B"
 const divider = "D"
+const arrowL = "<"
+const arrowR = ">"
 const a = "a"
 const b = "b"
 const c = "c"
@@ -36,11 +38,12 @@ const w = "w"
 const x = "x"
 const y = "y"
 const z = "z"
-const plugTile1 = ">"
-const plugTile2 = "<"
-const scramTop = "1"
-const scramMid = "2"
-const scramBot = "3"
+//1, 2, and 3 are here, but variables don't work so well there. remember to put in string
+const plugTile1 = "("
+const plugTile2 = ")"
+const scramTop = "["
+const scramMid = "|"
+const scramBot = "]"
 const light = "L"
 
 setLegend(
@@ -112,6 +115,40 @@ setLegend(
 0000000000000000
 0000000000000000
 0000000000000000`],
+  [arrowL, bitmap`
+................
+................
+................
+................
+................
+......00........
+.....00.........
+....00..........
+...00...........
+....00..........
+.....00.........
+......00........
+................
+................
+................
+................`],
+  [arrowR, bitmap`
+................
+................
+................
+................
+................
+........00......
+.........00.....
+..........00....
+...........00...
+..........00....
+.........00.....
+........00......
+................
+................
+................
+................`],
   [a, bitmap`
 ................
 ................
@@ -554,6 +591,57 @@ setLegend(
 ................
 ................
 ................`],
+  ["1", bitmap`
+................
+................
+................
+................
+................
+.......00.......
+......000.......
+.......00.......
+.......00.......
+.......00.......
+.......00.......
+.....000000.....
+................
+................
+................
+................`],
+  ["2", bitmap`
+................
+................
+................
+................
+................
+......0000......
+.....00..00.....
+.........00.....
+.......000......
+......00........
+.....00..00.....
+.....000000.....
+................
+................
+................
+................`],
+  ["3", bitmap`
+................
+................
+................
+................
+................
+.....000000.....
+........00......
+.......00.......
+......0000......
+.........00.....
+.....00..00.....
+......0000......
+................
+................
+................
+................`],
   [plugTile1, bitmap`
 ................
 ....55555555....
@@ -661,7 +749,7 @@ setLegend(
 setSolids([cursor, divider])
 
 //map definitions
-let level = 0
+var level
 const levels = [
   map`
 ..........
@@ -674,8 +762,57 @@ asdfghjkl.
 DDDDDDDDDD
 qwertyuiop
 asdfghjkl.
-Czxcvbnm..`, //qwerty keboard
+Czxcvbnm..`, //main machine
+  map`
+...........
+...........
+..[..[..[..
+..|..|..|..
+..]..]..]..
+.<.><.><.>.
+.....C.....
+...........` //scrambler configuration
 ]
+
+function updateLevel(inputLevel) {
+  level = inputLevel
+  setMap(levels[level]) //make it look nice
+  if (level == 0) { 
+    addSprite(0, 8, button)
+    addSprite(1, 8, button)
+    addSprite(2, 8, button)
+    addSprite(3, 8, button)
+    addSprite(4, 8, button)
+    addSprite(5, 8, button)
+    addSprite(6, 8, button)
+    addSprite(7, 8, button)
+    addSprite(8, 8, button)
+    addSprite(9, 8, button)
+    addSprite(0, 9, button)
+    addSprite(1, 9, button)
+    addSprite(2, 9, button)
+    addSprite(3, 9, button)
+    addSprite(4, 9, button)
+    addSprite(5, 9, button)
+    addSprite(6, 9, button)
+    addSprite(7, 9, button)
+    addSprite(8, 9, button)
+    addSprite(1, 10, button)
+    addSprite(2, 10, button)
+    addSprite(3, 10, button)
+    addSprite(4, 10, button)
+    addSprite(5, 10, button)
+    addSprite(6, 10, button)
+    addSprite(7, 10, button)
+    updateScramblers()
+  }
+  if (level == 1) {
+    addSprite(8, 1, wheelOrder[0])
+    addSprite(5, 1, wheelOrder[1])
+    addSprite(2, 1, wheelOrder[2])
+    updateScramblers()
+  }
+}
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"; //it's just the alphabet.
 const alphabetCapital = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //alphabet but capitalized
@@ -706,10 +843,10 @@ var letter; //number value of inputted letter, 1-26
 
 var rotations = [0, 0, 0]; //rotations of scramblers in wheel order, 0-25
 
-var plug1 //switchboard, swaps with plug2 at beginning and end, 1-26 or 0 for off
-var plug2 //switchboard, swaps with plug1
-var plug3 //switchboard, swaps with plug4
-var plug4 //switchboard, swaps with plug3
+var plug1 //plugboard, swaps with plug2 at beginning and end, 1-26 or 0 for off
+var plug2 //plugboard, swaps with plug1
+var plug3 //plugboard, swaps with plug4
+var plug4 //plugboard, swaps with plug3
 
 var wheelOrder = [1, 2, 3]
 
@@ -750,7 +887,7 @@ function scrambler3 (rot, reflected) {
   letter = constrain(letter)
 }
 
-function switchboard() {
+function plugboard() {
     if (letter == plug1) {letter = plug2;}
     else if (letter == plug2) {letter = plug1;}
     else if (letter == plug3) {letter = plug4;}
@@ -792,64 +929,52 @@ function rotate(){
 }
 
 function executeEnigma() {
-    switchboard();
+    plugboard();
     scramble(false);
     reflector();
     scramble(true);
-    switchboard();
+    plugboard();
     rotate();
 }
 
-setMap(levels[level]) //make it look nice
-if(level == 0) { 
-  addSprite(0, 8, button)
-  addSprite(1, 8, button)
-  addSprite(2, 8, button)
-  addSprite(3, 8, button)
-  addSprite(4, 8, button)
-  addSprite(5, 8, button)
-  addSprite(6, 8, button)
-  addSprite(7, 8, button)
-  addSprite(8, 8, button)
-  addSprite(9, 8, button)
-  addSprite(0, 9, button)
-  addSprite(1, 9, button)
-  addSprite(2, 9, button)
-  addSprite(3, 9, button)
-  addSprite(4, 9, button)
-  addSprite(5, 9, button)
-  addSprite(6, 9, button)
-  addSprite(7, 9, button)
-  addSprite(8, 9, button)
-  addSprite(1, 10, button)
-  addSprite(2, 10, button)
-  addSprite(3, 10, button)
-  addSprite(4, 10, button)
-  addSprite(5, 10, button)
-  addSprite(6, 10, button)
-  addSprite(7, 10, button)
-  updateScramblers()
-}
+//change letters on scramblers to match rotations
+function updateScramblers() {
+  if (level == 0) {
+    for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
+      for (let scramblerY = 1; scramblerY <= 3; scramblerY++) {
+        clearTile((8-(2*scramblerNum)), scramblerY)
+        if (scramblerY == 1) {
+          addSprite((8-(2*scramblerNum)), 1, scramTop)
+        }
+        else if (scramblerY == 2) {
+          addSprite((8-(2*scramblerNum)), 2, scramMid)
+        }
+        else {
+          addSprite((8-(2*scramblerNum)), 3, scramBot)
+        }
+        addSprite((8-(2*scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum]+3-scramblerY)))
+      }
+    }
+  }
 
-function updateScramblers() { //change letters on scramblers to match rotations
-  for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
-    for (let scramblerY = 1; scramblerY <= 3; scramblerY++) {
-      clearTile((8-(2*scramblerNum)), scramblerY)
-      if (scramblerY == 1) {
-        addSprite((8-(2*scramblerNum)), 1, scramTop)
+  if (level == 1) {
+    for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
+      for (let scramblerY = 2; scramblerY <= 4; scramblerY++) {
+        clearTile((8-(3*scramblerNum)), scramblerY)
+        if (scramblerY == 2) {
+          addSprite((8-(3*scramblerNum)), 2, scramTop)
+        }
+        else if (scramblerY == 3) {
+          addSprite((8-(3*scramblerNum)), 3, scramMid)
+        }
+        else {
+          addSprite((8-(3*scramblerNum)), 4, scramBot)
+        }
+        addSprite((8-(3*scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum]+4-scramblerY)))
       }
-      else if (scramblerY == 2) {
-        addSprite((8-(2*scramblerNum)), 2, scramMid)
-      }
-      else {
-        addSprite((8-(2*scramblerNum)), 3, scramBot)
-      }
-      addSprite((8-(2*scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum]+3-scramblerY)))
     }
   }
 }
-
-updateScramblers()
 
 //WASD
 onInput("w", () => {
@@ -865,46 +990,11 @@ onInput("d", () => {
   getFirst(cursor).x += 1
 })
 
-//select input letter
-onInput("l", () => {
-  if (explain == false) {
-    letter = 0
-    for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
-      //check if cursor x and y are the same as letter x and y
-      if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
-        letter = letterChecked;
-      }
-    }
-    //if you aren't on blank space
-    if (letter != 0) {
-        executeEnigma()
-      //get rid of previous light, if there is one
-      if (getAll(light).length != 0) {
-        getFirst(light).remove()
-      }
-      //add light to output letter
-      addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
-      //start list of outputs or graft new output onto list
-      if (ciphertext.length == 0) {
-        ciphertext = capitalize(alphabetize(letter))
-      }
-      else ciphertext = ciphertext + capitalize(alphabetize(letter))
-      //if it's too long to fit, trim the first letter
-      if (ciphertext.length >= 15) {ciphertext = ciphertext.replace(ciphertext.charAt(0), "")}
-      //list outputs
-      addText(ciphertext, {
-      x: 3,
-      y: 0,
-      color: color`3`})
-    
-      updateScramblers();
-    }
-  }
 
-  
-  //when explain is true, slower and with explanations
-  else {
-    if (explanationStep == 0) {
+onInput("l", () => {
+  //select input letter
+  if (level == 0) {
+    if (explain == false) {
       letter = 0
       for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
         //check if cursor x and y are the same as letter x and y
@@ -912,117 +1002,165 @@ onInput("l", () => {
           letter = letterChecked;
         }
       }
-      
       //if you aren't on blank space
       if (letter != 0) {
+          executeEnigma()
         //get rid of previous light, if there is one
         if (getAll(light).length != 0) {
           getFirst(light).remove()
         }
-      //get rid of line of ciphertext, if it's there
-      clearText()
-      explanationStep++
-      }
-    }
-
-    //should follow directly after step 0, if step 0's conditions were met
-    if (explanationStep == 1) {  
-      //execute enigma but with pauses and explanations
-      explanation = alphabetize(letter) + ">switch>"
-      switchboard()
-      explanation += alphabetize(letter)
-      clearText()
-      explanationText(explanation)
-      explanationStep++
-    }
-
-    //like scramble function, but with explanationStep - 2 instead of letterPos
-    else if (explanationStep >= 2 && explanationStep <= 4) {
-      explanation = alphabetize(letter)
-      if (wheelOrder[explanationStep - 2] == 1) {
-        explanation += ">scram1"
-        scrambler1(rotations[explanationStep - 2], false);
-      }
-      else if (wheelOrder[explanationStep - 2] == 2) {
-        explanation += ">scram2"
-        scrambler2(rotations[explanationStep - 2], false);
-      }
-      else if (wheelOrder[explanationStep - 2] == 3) {
-        explanation += ">scram3"
-        scrambler3(rotations[explanationStep - 2], false);
-      }
-      explanation += ">" + alphabetize(letter)
-      clearText()
-      explanationText(explanation)
-      explanationStep++
-    }
-
-    else if (explanationStep == 5) {
-      explanation = alphabetize(letter) + ">reflector>"
-      reflector()
-      explanation += alphabetize(letter)
-      clearText()
-      explanationText(explanation)
-      explanationStep++
-    }
-
-    //like reflected scramble, but with 8 - explanationStep instead of letterPos
-    else if (explanationStep >= 6 && explanationStep <= 8) {
-      explanation = alphabetize(letter)
-      if (wheelOrder[8 - explanationStep] == 1) {
-        explanation += ">scram1"
-        scrambler1(rotations[8 - explanationStep], true);
-      }
-      else if (wheelOrder[8 - explanationStep] == 2) {
-        explanation += ">scram2"
-        scrambler2(rotations[8 - explanationStep], true);
-      }
-      else if (wheelOrder[8 - explanationStep] == 3) {
-        explanation += ">scram3"
-        scrambler3(rotations[8 - explanationStep], true);
-      }
-      explanation += "R>" + alphabetize(letter)
-      clearText()
-      explanationText(explanation)
-      explanationStep++
-    }
-
-    else if (explanationStep == 9) {  
-      //execute enigma but with pauses and explanations
-      explanation = alphabetize(letter) + ">switch>"
-      switchboard()
-      explanation += capitalize(alphabetize(letter))
+        //add light to output letter
+        addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
+        //start list of outputs or graft new output onto list
+        if (ciphertext.length == 0) {
+          ciphertext = capitalize(alphabetize(letter))
+        }
+        else ciphertext = ciphertext + capitalize(alphabetize(letter))
+        //if it's too long to fit, trim the first letter
+        if (ciphertext.length >= 15) {ciphertext = ciphertext.replace(ciphertext.charAt(0), "")}
+        //list outputs
+        addText(ciphertext, {
+        x: 3,
+        y: 0,
+        color: color`3`})
       
-      //add light to output letter
-      addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
-      
-      clearText()
-      explanationText(explanation)
-      explanationStep++
-    }
-
-    else if (explanationStep == 10) {
-      rotate()
-      updateScramblers()
-      explanationText("scrams rotate")
-      explanationStep++
-    }
-
-    else if (explanationStep == 11) {
-      //start list of outputs or graft new output onto list
-      clearText()
-      if (ciphertext.length == 0) {
-        ciphertext = capitalize(alphabetize(letter))
+        updateScramblers();
       }
-      else ciphertext = ciphertext + capitalize(alphabetize(letter))
-      //if it's too long to fit, trim the first letter
-      if (ciphertext.length >= 15) {ciphertext = ciphertext.replace(ciphertext.charAt(0), "")}
-      //list outputs
-      addText(ciphertext, {
-      x: 3,
-      y: 0,
-      color: color`3`})
-      explanationStep = 0
+    }
+    
+    //when explain is true, slower and with explanations
+    else {
+      if (explanationStep == 0) {
+        letter = 0
+        for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
+          //check if cursor x and y are the same as letter x and y
+          if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
+            letter = letterChecked;
+          }
+        }
+        
+        //if you aren't on blank space
+        if (letter != 0) {
+          //get rid of previous light, if there is one
+          if (getAll(light).length != 0) {
+            getFirst(light).remove()
+          }
+        //get rid of line of ciphertext, if it's there
+        clearText()
+        explanationStep++
+        }
+      }
+  
+      //should follow directly after step 0, if step 0's conditions were met
+      if (explanationStep == 1) {  
+        //execute enigma but with pauses and explanations
+        explanation = alphabetize(letter) + ">plug>"
+        plugboard()
+        explanation += alphabetize(letter)
+        clearText()
+        explanationText(explanation)
+        explanationStep++
+      }
+  
+      //like scramble function, but with explanationStep - 2 instead of letterPos
+      else if (explanationStep >= 2 && explanationStep <= 4) {
+        explanation = alphabetize(letter)
+        if (wheelOrder[explanationStep - 2] == 1) {
+          explanation += ">scram1"
+          scrambler1(rotations[explanationStep - 2], false);
+        }
+        else if (wheelOrder[explanationStep - 2] == 2) {
+          explanation += ">scram2"
+          scrambler2(rotations[explanationStep - 2], false);
+        }
+        else if (wheelOrder[explanationStep - 2] == 3) {
+          explanation += ">scram3"
+          scrambler3(rotations[explanationStep - 2], false);
+        }
+        explanation += ">" + alphabetize(letter)
+        clearText()
+        explanationText(explanation)
+        explanationStep++
+      }
+  
+      else if (explanationStep == 5) {
+        explanation = alphabetize(letter) + ">reflector>"
+        reflector()
+        explanation += alphabetize(letter)
+        clearText()
+        explanationText(explanation)
+        explanationStep++
+      }
+  
+      //like reflected scramble, but with 8 - explanationStep instead of letterPos
+      else if (explanationStep >= 6 && explanationStep <= 8) {
+        explanation = alphabetize(letter)
+        if (wheelOrder[8 - explanationStep] == 1) {
+          explanation += ">scram1"
+          scrambler1(rotations[8 - explanationStep], true);
+        }
+        else if (wheelOrder[8 - explanationStep] == 2) {
+          explanation += ">scram2"
+          scrambler2(rotations[8 - explanationStep], true);
+        }
+        else if (wheelOrder[8 - explanationStep] == 3) {
+          explanation += ">scram3"
+          scrambler3(rotations[8 - explanationStep], true);
+        }
+        explanation += "R>" + alphabetize(letter)
+        clearText()
+        explanationText(explanation)
+        explanationStep++
+      }
+  
+      else if (explanationStep == 9) {  
+        //execute enigma but with pauses and explanations
+        explanation = alphabetize(letter) + ">plug>"
+        plugboard()
+        explanation += capitalize(alphabetize(letter))
+        
+        //add light to output letter
+        addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
+        
+        clearText()
+        explanationText(explanation)
+        explanationStep++
+      }
+  
+      else if (explanationStep == 10) {
+        rotate()
+        updateScramblers()
+        explanationText("scrams rotate")
+        explanationStep++
+      }
+  
+      else if (explanationStep == 11) {
+        //start list of outputs or graft new output onto list
+        clearText()
+        if (ciphertext.length == 0) {
+          ciphertext = capitalize(alphabetize(letter))
+        }
+        else ciphertext = ciphertext + capitalize(alphabetize(letter))
+        //if it's too long to fit, trim the first letter
+        if (ciphertext.length >= 15) {ciphertext = ciphertext.replace(ciphertext.charAt(0), "")}
+        //list outputs
+        addText(ciphertext, {
+        x: 3,
+        y: 0,
+        color: color`3`})
+        explanationStep = 0
+      }
     }
   }
+  if (level == 1) {
+    for (let leftChecked = 1; leftChecked <= 3 && letter == 0; leftChecked++){
+        //check if cursor x and y are the same as left arrow x and y
+        if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
+          letter = letterChecked;
+        }
+      }
+  }
 })
+
+//temporary
+updateLevel(1)
