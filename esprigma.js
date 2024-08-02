@@ -807,10 +807,19 @@ function updateLevel(inputLevel) {
     updateScramblers()
   }
   if (level == 1) {
-    addSprite(8, 1, wheelOrder[0])
-    addSprite(5, 1, wheelOrder[1])
-    addSprite(2, 1, wheelOrder[2])
     updateScramblers()
+  }
+}
+
+//clearTile, but it doesn't remove the cursor
+function safeClearTile(x, y) {
+  let isCursor = false
+  if (getTile(x, y).includes(cursor, 0) == true) {
+    isCursore = true
+  }
+  clearTile(x, y)
+  if (isCursor == true) {
+    addSprite(x, y, cursor)
   }
 }
 
@@ -839,7 +848,10 @@ function explanationText(text) {
 }
 var explanationStep = 0
 
-var letter; //number value of inputted letter, 1-26
+var wheelOrderConfig = 0 //for scrambler config, first scrambler to be swapped with another
+var wheelNum = 0 //for scrambler config, number being selected/swapped. 0 for off
+
+var letter //number value of inputted letter, 1-26
 
 var rotations = [0, 0, 0]; //rotations of scramblers in wheel order, 0-25
 
@@ -960,7 +972,7 @@ function updateScramblers() {
   if (level == 1) {
     for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
       for (let scramblerY = 2; scramblerY <= 4; scramblerY++) {
-        clearTile((8-(3*scramblerNum)), scramblerY)
+        safeClearTile((8-(3*scramblerNum)), scramblerY)
         if (scramblerY == 2) {
           addSprite((8-(3*scramblerNum)), 2, scramTop)
         }
@@ -972,6 +984,15 @@ function updateScramblers() {
         }
         addSprite((8-(3*scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum]+4-scramblerY)))
       }
+    }
+    safeClearTile(8, 1)
+    addSprite(8, 1, wheelOrder[0])
+    safeClearTile(5, 1)
+    addSprite(5, 1, wheelOrder[1])
+    safeClearTile(2, 1)
+    addSprite(2, 1, wheelOrder[2])
+    if (wheelOrderConfig != 0) {
+      addSprite(getFirst(wheelOrderConfig).x, 1, light)
     }
   }
 }
@@ -1152,13 +1173,44 @@ onInput("l", () => {
       }
     }
   }
+  
   if (level == 1) {
-    for (let leftChecked = 1; leftChecked <= 3 && letter == 0; leftChecked++){
-        //check if cursor x and y are the same as left arrow x and y
-        if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
-          letter = letterChecked;
-        }
+  //check if it's on arrows and scroll scrambler rotation
+    for (let leftChecked = 0; leftChecked <= 2; leftChecked++){
+      //check if cursor x and y are the same as left arrow x and y
+      if (getFirst(cursor).x == getAll(arrowL)[2 - leftChecked].x && getFirst(cursor).y == getAll(arrowL)[2 - leftChecked].y) {
+        rotations[leftChecked] = constrain(rotations[leftChecked]) - 1
       }
+    }
+    for (let rightChecked = 0; rightChecked <= 2; rightChecked++){
+      //check if cursor x and y are the same as right arrow x and y
+      if (getFirst(cursor).x == getAll(arrowR)[2 - rightChecked].x && getFirst(cursor).y == getAll(arrowR)[2 - rightChecked].y) {
+        rotations[rightChecked] = constrain(rotations[rightChecked] + 2) - 1
+      }
+    }
+    updateScramblers()
+
+    //check if cursor is on number, swap or prepare to swap with another number
+    let exit = false
+    for (wheelNum = 1; wheelNum <= 3 && exit == false; wheelNum++) {
+      //check if cursor x and y are the same as wheel number x and y
+      if (getFirst(cursor).x == getFirst(wheelNum).x && getFirst(cursor).y == getFirst(wheelNum).y) {
+        //if nothing's lit up, light the number you're on up
+        if (wheelOrderConfig == 0) {
+          wheelOrderConfig = wheelNum
+        }
+        //if something's lit up, swap it with number you pressed
+        else {
+          wheelOrder[wheelOrder.indexOf(wheelOrderConfig)] = wheelNum
+          wheelOrder[wheelOrder.indexOf(wheelNum)] = wheelOrderConfig
+          wheelNum = 0
+        }
+        updateScramblers()
+        addSprite
+        //so that it doesn't keep running and mess with things
+        exit = true
+      }
+    }
   }
 })
 
