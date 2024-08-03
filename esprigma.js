@@ -771,56 +771,45 @@ Czxcvbnm..`, //main machine
 ..]..]..]..
 .<.><.><.>.
 .....C.....
-...........` //scrambler configuration
+...........`, //wheel configuration
+  map`
+(.........
+).........
+..........
+qwertyuiop
+asdfghjkl.
+Czxcvbnm..` //plug configuration
 ]
 
 function updateLevel(inputLevel) {
   level = inputLevel
   setMap(levels[level]) //make it look nice
   if (level == 0) { 
-    addSprite(0, 8, button)
-    addSprite(1, 8, button)
-    addSprite(2, 8, button)
-    addSprite(3, 8, button)
-    addSprite(4, 8, button)
-    addSprite(5, 8, button)
-    addSprite(6, 8, button)
-    addSprite(7, 8, button)
-    addSprite(8, 8, button)
-    addSprite(9, 8, button)
-    addSprite(0, 9, button)
-    addSprite(1, 9, button)
-    addSprite(2, 9, button)
-    addSprite(3, 9, button)
-    addSprite(4, 9, button)
-    addSprite(5, 9, button)
-    addSprite(6, 9, button)
-    addSprite(7, 9, button)
-    addSprite(8, 9, button)
-    addSprite(1, 10, button)
-    addSprite(2, 10, button)
-    addSprite(3, 10, button)
-    addSprite(4, 10, button)
-    addSprite(5, 10, button)
-    addSprite(6, 10, button)
-    addSprite(7, 10, button)
+    updateKeyboard(0, 8)
     updateScramblers()
   }
   if (level == 1) {
     updateScramblers()
   }
+  if (level == 2) { 
+    updateKeyboard(0, 3)
+    addText("PLUG 1", { 
+      x: 2,
+      y: 3,
+      color: color`5`
+    })
+    addText("PLUG 2", { 
+      x: 2,
+      y: 5,
+      color: color`D`
+    })
+  }
 }
 
-//clearTile, but it doesn't remove the cursor
+//clearTile, but it doesn't remove the cursor, letters, or the button sprite
 function safeClearTile(x, y) {
-  let isCursor = false
-  if (getTile(x, y).includes(cursor, 0) == true) {
-    isCursore = true
-  }
-  clearTile(x, y)
-  if (isCursor == true) {
-    addSprite(x, y, cursor)
-  }
+  let spritesToRemove = getTile(x, y).filter(sprite => sprite.type != cursor && sprite.type != button && (sprite.type.charCodeAt(0) < 97 || sprite.type.charCodeAt(0) > 122))
+  spritesToRemove.forEach(sprite => sprite.remove())
 }
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"; //it's just the alphabet.
@@ -851,14 +840,16 @@ var explanationStep = 0
 var wheelOrderConfig = 0 //for scrambler config, first scrambler to be swapped with another
 var wheelNum = 0 //for scrambler config, number being selected/swapped. 0 for off
 
+var plugSelected = 0 //for plug config, 1 or 2, or 0 for off. plug kind you're messing with
+
 var letter //number value of inputted letter, 1-26
 
 var rotations = [0, 0, 0]; //rotations of scramblers in wheel order, 0-25
 
-var plug1 //plugboard, swaps with plug2 at beginning and end, 1-26 or 0 for off
-var plug2 //plugboard, swaps with plug1
-var plug3 //plugboard, swaps with plug4
-var plug4 //plugboard, swaps with plug3
+var plug1 = 0//plugboard, swaps with plug2 at beginning and end, 1-26 or 0 for off
+var plug2 = 0//plugboard, swaps with plug1
+var plug3 = 0//plugboard, swaps with plug4
+var plug4 = 0//plugboard, swaps with plug3
 
 var wheelOrder = [1, 2, 3]
 
@@ -954,7 +945,7 @@ function updateScramblers() {
   if (level == 0) {
     for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
       for (let scramblerY = 1; scramblerY <= 3; scramblerY++) {
-        clearTile((8-(2*scramblerNum)), scramblerY)
+        safeClearTile((8-(2*scramblerNum)), scramblerY)
         if (scramblerY == 1) {
           addSprite((8-(2*scramblerNum)), 1, scramTop)
         }
@@ -968,10 +959,9 @@ function updateScramblers() {
       }
     }
   }
-
   if (level == 1) {
-    for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
-      for (let scramblerY = 2; scramblerY <= 4; scramblerY++) {
+      for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
+        for (let scramblerY = 2; scramblerY <= 4; scramblerY++) {
         safeClearTile((8-(3*scramblerNum)), scramblerY)
         if (scramblerY == 2) {
           addSprite((8-(3*scramblerNum)), 2, scramTop)
@@ -997,6 +987,76 @@ function updateScramblers() {
   }
 }
 
+//change lights on keyboard to match plugs
+function updateKeyboard(x, y) {
+  safeClearTile
+  addSprite(x, y, button)
+  addSprite(x+1, y, button)
+  addSprite(x+2, y, button)
+  addSprite(x+3, y, button)
+  addSprite(x+4, y, button)
+  addSprite(x+5, y, button)
+  addSprite(x+6, y, button)
+  addSprite(x+7, y, button)
+  addSprite(x+8, y, button)
+  addSprite(x+9, y, button)
+  addSprite(x+0, y+1, button)
+  addSprite(x+1, y+1, button)
+  addSprite(x+2, y+1, button)
+  addSprite(x+3, y+1, button)
+  addSprite(x+4, y+1, button)
+  addSprite(x+5, y+1, button)
+  addSprite(x+6, y+1, button)
+  addSprite(x+7, y+1, button)
+  addSprite(x+8, y+1, button)
+  addSprite(x+1, y+2, button)
+  addSprite(x+2, y+2, button)
+  addSprite(x+3, y+2, button)
+  addSprite(x+4, y+2, button)
+  addSprite(x+5, y+2, button)
+  addSprite(x+6, y+2, button)
+  addSprite(x+7, y+2, button)
+  safeClearTile(x, y)
+  safeClearTile(x+1, y)
+  safeClearTile(x+2, y)
+  safeClearTile(x+3, y)
+  safeClearTile(x+4, y)
+  safeClearTile(x+5, y)
+  safeClearTile(x+6, y)
+  safeClearTile(x+7, y)
+  safeClearTile(x+8, y)
+  safeClearTile(x+9, y)
+  safeClearTile(x+0, y+1)
+  safeClearTile(x+1, y+1)
+  safeClearTile(x+2, y+1)
+  safeClearTile(x+3, y+1)
+  safeClearTile(x+4, y+1)
+  safeClearTile(x+5, y+1)
+  safeClearTile(x+6, y+1)
+  safeClearTile(x+7, y+1)
+  safeClearTile(x+8, y+1)
+  safeClearTile(x+1, y+2)
+  safeClearTile(x+2, y+2)
+  safeClearTile(x+3, y+2)
+  safeClearTile(x+4, y+2)
+  safeClearTile(x+5, y+2)
+  safeClearTile(x+6, y+2)
+  safeClearTile(x+7, y+2)
+  if (plug1 != 0) {
+    addSprite((getFirst(alphabetize(plug1))).x, (getFirst(alphabetize(plug1))).y, plugTile1)
+  }
+  if (plug2 != 0) {
+    addSprite((getFirst(alphabetize(plug2))).x, (getFirst(alphabetize(plug2))).y, plugTile1)
+  }
+  if (plug3 != 0) {
+    addSprite((getFirst(alphabetize(plug3))).x, (getFirst(alphabetize(plug3))).y, plugTile2)
+  }
+  if (plug4 != 0) {
+    addSprite((getFirst(alphabetize(plug4))).x, (getFirst(alphabetize(plug4))).y, plugTile2)
+  }
+}
+
+
 //WASD
 onInput("w", () => {
   getFirst(cursor).y -= 1
@@ -1010,6 +1070,7 @@ onInput("s", () => {
 onInput("d", () => {
   getFirst(cursor).x += 1
 })
+
 
 
 onInput("l", () => {
@@ -1045,7 +1106,7 @@ onInput("l", () => {
         y: 0,
         color: color`3`})
       
-        updateScramblers();
+        updateScramblers()
       }
     }
     
@@ -1174,21 +1235,22 @@ onInput("l", () => {
     }
   }
   
-  if (level == 1) {
+  else if (level == 1) {
   //check if it's on arrows and scroll scrambler rotation
     for (let leftChecked = 0; leftChecked <= 2; leftChecked++){
       //check if cursor x and y are the same as left arrow x and y
       if (getFirst(cursor).x == getAll(arrowL)[2 - leftChecked].x && getFirst(cursor).y == getAll(arrowL)[2 - leftChecked].y) {
         rotations[leftChecked] = constrain(rotations[leftChecked]) - 1
+        updateScramblers()
       }
     }
     for (let rightChecked = 0; rightChecked <= 2; rightChecked++){
       //check if cursor x and y are the same as right arrow x and y
       if (getFirst(cursor).x == getAll(arrowR)[2 - rightChecked].x && getFirst(cursor).y == getAll(arrowR)[2 - rightChecked].y) {
         rotations[rightChecked] = constrain(rotations[rightChecked] + 2) - 1
+        updateScramblers()
       }
     }
-    updateScramblers()
 
     //check if cursor is on number, swap or prepare to swap with another number
     let exit = false
@@ -1201,18 +1263,58 @@ onInput("l", () => {
         }
         //if something's lit up, swap it with number you pressed
         else {
+          let wheelNumIndex = wheelOrder.indexOf(wheelNum)
           wheelOrder[wheelOrder.indexOf(wheelOrderConfig)] = wheelNum
-          wheelOrder[wheelOrder.indexOf(wheelNum)] = wheelOrderConfig
-          wheelNum = 0
+          wheelOrder[wheelNumIndex] = wheelOrderConfig
+          wheelOrderConfig = 0
         }
         updateScramblers()
-        addSprite
         //so that it doesn't keep running and mess with things
         exit = true
+      }
+    }
+  }
+  else if (level == 2) {
+    //check if it's on plug 1 selector thingy
+    if (getFirst(cursor).x == getFirst(plugTile1).x && getFirst(cursor).y == getFirst(plugTile1).y) {
+      plugSelected = 1
+    }
+    //check if it's on plug 2 selector thingy
+    else if (getFirst(cursor).x == getFirst(plugTile2).x && getFirst(cursor).y == getFirst(plugTile2).y) {
+      plugSelected = 2
+    }
+    //check if it's on a letter
+    for (let letterChecked = 1; letterChecked <= 26; letterChecked++){
+      if (getFirst(cursor).x == getFirst(alphabetize(letterChecked)).x && getFirst(cursor).y == getFirst(alphabetize(letterChecked)).y) {
+        if (plugSelected == 1) {
+          if (plug1 == 0) {
+            plug1 = letterChecked
+          }
+          else if (plug2 == 0) {
+            plug2 = letterChecked
+          }
+          else {
+            plug1 = letterChecked
+            plug2 = 0
+          }
+        }
+        else if (plugSelected == 2) {
+          if (plug3 == 0) {
+            plug3 = letterChecked
+          }
+          else if (plug4 == 0) {
+            plug4 = letterChecked
+          }
+          else {
+            plug3 = letterChecked
+            plug4 = 0
+          }
+        }
+      updateKeyboard(0, 3)
       }
     }
   }
 })
 
 //temporary
-updateLevel(1)
+updateLevel(2)
