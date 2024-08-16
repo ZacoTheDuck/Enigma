@@ -13,6 +13,10 @@ const divider = "D"
 const arrowL = "<"
 const arrowR = ">"
 const redX = "X"
+const greenCircle = "*"
+const enigma = "E"
+const note = "N"
+const table = "T"
 const a = "a"
 const b = "b"
 const c = "c"
@@ -46,6 +50,7 @@ const scramTop = "["
 const scramMid = "|"
 const scramBot = "]"
 const light = "L"
+const blank = "-"
 
 setLegend(
   [cursor, bitmap`
@@ -167,6 +172,74 @@ setLegend(
 ..33........33..
 .33..........33.
 ................`],
+  [greenCircle, bitmap`
+................
+....DDDDDDDD....
+...DDDDDDDDDD...
+..DDDDDDDDDDDD..
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+.DDDDDDDDDDDDDD.
+..DDDDDDDDDDDD..
+...DDDDDDDDDD...
+....DDDDDDDD....
+................`],
+  [enigma, bitmap`
+................
+..000000000000..
+..022222222220..
+..02122L2L2L20..
+..02122L2L2L20..
+..02122L2L2L20..
+..022222222220..
+..011111111110..
+..011111111110..
+..011111111110..
+..000000000000..
+..011111111110..
+..011111111110..
+..011111111110..
+..000000000000..
+................`],
+  [note, bitmap`
+................
+................
+................
+................
+........2.......
+.......222......
+......22222.....
+.....2222222....
+....2222222.....
+.....22222......
+......222.......
+.......2........
+................
+................
+................
+................`],
+  [table, bitmap`
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC`],
   [a, bitmap`
 ................
 ................
@@ -761,10 +834,27 @@ setLegend(
 ..666666666666..
 ...6666666666...
 ....66666666....
+................`],
+  [blank, bitmap`
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
+................
 ................`]
 )
 
-setSolids([cursor, divider])
+setSolids([cursor, divider, blank])
 
 //map definitions
 var level
@@ -791,8 +881,8 @@ Czxcvbnm..`, //main machine
 .....C.....
 ...........`, //wheel configuration
   map`
-(.........
-).........
+(...X.....
+)...X.....
 ..........
 qwertyuiop
 asdfghjkl.
@@ -801,7 +891,16 @@ Czxcvbnm..`, //plug configuration
 Lenigma.
 .explain
 Lwheels.
-Lplugs..` //level selection
+Lplugs..`, //enigma main menu
+  map`
+---
+NCE
+---`, //table with note and enigma
+  map`
+.....
+.....
+.....
+.....` //note
 ]
 
 function updateLevel(inputLevel) {
@@ -831,11 +930,17 @@ function updateLevel(inputLevel) {
   if (level == 3) {
     addSprite(0, 0, cursor)
     if (explain == true) {
-      addSprite(0, 1, plugTile2) //just a green circle for on
+      addSprite(0, 1, greenCircle)
     }
     else {
       addSprite(0, 1, redX)
     }
+  }
+  if (level == 4) {
+    setBackground(table)
+  }
+  else {
+    setBackground(blank)
   }
 }
 
@@ -852,19 +957,19 @@ function safeClearTile(x, y, keepLetters) {
   }
 }
 
-const alphabet = "abcdefghijklmnopqrstuvwxyz"; //it's just the alphabet.
-const alphabetCapital = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //alphabet but capitalized
+const alphabet = "abcdefghijklmnopqrstuvwxyz" //it's just the alphabet.
+const alphabetCapital = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" //alphabet but capitalized
 //number to letter
-function alphabetize(inNumber) {return alphabet.charAt(inNumber - 1);}
+function alphabetize(inNumber) {return alphabet.charAt(inNumber - 1)}
 //letter to number
-function dealphabetize(inCharacter) {return (alphabet.indexOf(inCharacter) + 1);}
+function dealphabetize(inCharacter) {return (alphabet.indexOf(inCharacter) + 1)}
 //makes a lowercase letter capital
-function capitalize(inCharacter) {return (alphabetCapital.charAt(alphabet.indexOf(inCharacter)));}
+function capitalize(inCharacter) {return (alphabetCapital.charAt(alphabet.indexOf(inCharacter)))}
 //puts a number within alphabet if it's at most 1 alphabet away
 function constrain(constrainee) {
-    if (constrainee < 1) {return constrainee + 26;}
-    else if (constrainee > 26) {return constrainee - 26;}
-    else return constrainee;
+    if (constrainee < 1) {return constrainee + 26}
+    else if (constrainee > 26) {return constrainee - 26}
+    else return constrainee
 }
 
 var explain = false //boolean, when true machine goes step-by-step with explanations
@@ -884,12 +989,12 @@ var plugSelected = 0 //for plug config, 1 or 2, or 0 for off. plug kind you're m
 
 var letter //number value of inputted letter, 1-26
 
-var rotations = [0, 0, 0]; //rotations of scramblers in wheel order, 0-25
+var rotations = [0, 0, 0] //rotations of scramblers in wheel order, 0-25
 
-var plug1 = 0//plugboard, swaps with plug2 at beginning and end, 1-26 or 0 for off
-var plug2 = 0//plugboard, swaps with plug1
-var plug3 = 0//plugboard, swaps with plug4
-var plug4 = 0//plugboard, swaps with plug3
+var plug1 = 0 //plugboard, swaps with plug2 at beginning and end, 1-26 or 0 for off
+var plug2 = 0 //plugboard, swaps with plug1
+var plug3 = 0 //plugboard, swaps with plug4
+var plug4 = 0 //plugboard, swaps with plug3
 
 var wheelOrder = [1, 2, 3]
 
@@ -904,37 +1009,37 @@ var ciphertext = ""
 
 function scrambler1 (rot, reflected) {
   //account for scrambler's rotation
-  let scramLetter = constrain(letter + rot);
+  let scramLetter = constrain(letter + rot)
   //if explaining, add the path the signal takes
   if (explain == true) {explanation += alphabetize(scramLetter)}
   //enigmatize that thang
-  if (reflected == false) {letter = scramList1[scramLetter - 1] - rot;}
-  else {letter = scramList1.indexOf(scramLetter) + 1 - rot;}
+  if (reflected == false) {letter = scramList1[scramLetter - 1] - rot}
+  else {letter = scramList1.indexOf(scramLetter) + 1 - rot}
   //there's only so much alphabet
   letter = constrain(letter)
 }
 
 function scrambler2 (rot, reflected) {
-  let scramLetter = constrain(letter + rot);
+  let scramLetter = constrain(letter + rot)
   if (explain == true) {explanation += alphabetize(scramLetter)}
-  if (reflected == false) {letter = scramList2[scramLetter - 1] - rot;}
-  else {letter = scramList2.indexOf(scramLetter) + 1 - rot;}
+  if (reflected == false) {letter = scramList2[scramLetter - 1] - rot}
+  else {letter = scramList2.indexOf(scramLetter) + 1 - rot}
   letter = constrain(letter)
 }
 
 function scrambler3 (rot, reflected) {
-  let scramLetter = constrain(letter + rot);
+  let scramLetter = constrain(letter + rot)
   if (explain == true) {explanation += alphabetize(scramLetter)}
-  if (reflected == false) {letter = scramList3[scramLetter - 1] - rot;}
-  else {letter = scramList3.indexOf(scramLetter) + 1 - rot;}
+  if (reflected == false) {letter = scramList3[scramLetter - 1] - rot}
+  else {letter = scramList3.indexOf(scramLetter) + 1 - rot}
   letter = constrain(letter)
 }
 
 function plugboard() {
-    if (letter == plug1) {letter = plug2;}
-    else if (letter == plug2) {letter = plug1;}
-    else if (letter == plug3) {letter = plug4;}
-    else if (letter == plug4) {letter = plug3;}
+    if (letter == plug1) {letter = plug2}
+    else if (letter == plug2) {letter = plug1}
+    else if (letter == plug3) {letter = plug4}
+    else if (letter == plug4) {letter = plug3}
 }
 
 function scramble(reflected) {
@@ -942,31 +1047,31 @@ function scramble(reflected) {
       //check scrambler of current position, execute, change position, repeat three times.
       //if reflected true, start at third scrambler and go backwards
         if (wheelOrder[letterPos] == 1) {
-          scrambler1(rotations[letterPos], reflected);
+          scrambler1(rotations[letterPos], reflected)
         }
         else if (wheelOrder[letterPos] == 2) {
-          scrambler2(rotations[letterPos], reflected);
+          scrambler2(rotations[letterPos], reflected)
         }
         else if (wheelOrder[letterPos] == 3) {
-          scrambler3(rotations[letterPos], reflected);
+          scrambler3(rotations[letterPos], reflected)
         }
     }
 }
 
 function reflector() {
     if (reflectList.indexOf(letter) % 2 == 0) {letter = reflectList[reflectList.indexOf(letter) + 1];} //if letter's position in array is even, move to next index
-    else {letter = reflectList[reflectList.indexOf(letter) - 1];} //if letter's position in array is odd, move down an index
+    else {letter = reflectList[reflectList.indexOf(letter) - 1]} //if letter's position in array is odd, move down an index
 }
 
 function rotate(){
-    if (rotations[0] != 25) {rotations[0]++;}
+    if (rotations[0] != 25) {rotations[0]++}
     else {
-        rotations[0] = 0;
-        if (rotations[1] != 25) {rotations[1]++;}
+        rotations[0] = 0
+        if (rotations[1] != 25) {rotations[1]++}
         else {
-            rotations[1] = 0;
-            if (rotations[2] != 25) {rotations[2]++;}
-            else {rotations[2] = 0;}
+            rotations[1] = 0
+            if (rotations[2] != 25) {rotations[2]++}
+            else {rotations[2] = 0}
         }
     }
 }
@@ -1089,7 +1194,7 @@ function updateKeyboard(x, y, letterIndex) {
     addSprite((getAll(alphabetize(plug2))[letterIndex]).x, (getAll(alphabetize(plug2))[letterIndex]).y, plugTile1)
   }
   if (plug3 != 0) {
-    addSprite((getAll(alphabetize(plug3)[letterIndex])).x, (getAll(alphabetize(plug3))[letterIndex]).y, plugTile2)
+    addSprite((getAll(alphabetize(plug3))[letterIndex]).x, (getAll(alphabetize(plug3))[letterIndex]).y, plugTile2)
   }
   if (plug4 != 0) {
     addSprite((getAll(alphabetize(plug4))[letterIndex]).x, (getAll(alphabetize(plug4))[letterIndex]).y, plugTile2)
@@ -1122,7 +1227,7 @@ onInput("l", () => {
       for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
         //check if cursor x and y are the same as letter x and y
         if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
-          letter = letterChecked;
+          letter = letterChecked
         }
       }
       //if you aren't on blank space
@@ -1158,7 +1263,7 @@ onInput("l", () => {
         for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
           //check if cursor x and y are the same as letter x and y
           if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
-            letter = letterChecked;
+            letter = letterChecked
           }
         }
         
@@ -1189,16 +1294,16 @@ onInput("l", () => {
       else if (explanationStep >= 2 && explanationStep <= 4) {
         explanation = alphabetize(letter)
         if (wheelOrder[explanationStep - 2] == 1) {
-          explanation += ">scram1"
-          scrambler1(rotations[explanationStep - 2], false);
+          explanation += ">wheel1"
+          scrambler1(rotations[explanationStep - 2], false)
         }
         else if (wheelOrder[explanationStep - 2] == 2) {
-          explanation += ">scram2"
-          scrambler2(rotations[explanationStep - 2], false);
+          explanation += ">wheel2"
+          scrambler2(rotations[explanationStep - 2], false)
         }
         else if (wheelOrder[explanationStep - 2] == 3) {
-          explanation += ">scram3"
-          scrambler3(rotations[explanationStep - 2], false);
+          explanation += ">wheel3"
+          scrambler3(rotations[explanationStep - 2], false)
         }
         explanation += ">" + alphabetize(letter)
         clearText()
@@ -1219,16 +1324,16 @@ onInput("l", () => {
       else if (explanationStep >= 6 && explanationStep <= 8) {
         explanation = alphabetize(letter)
         if (wheelOrder[8 - explanationStep] == 1) {
-          explanation += ">scram1"
-          scrambler1(rotations[8 - explanationStep], true);
+          explanation += ">wheel1"
+          scrambler1(rotations[8 - explanationStep], true)
         }
         else if (wheelOrder[8 - explanationStep] == 2) {
-          explanation += ">scram2"
-          scrambler2(rotations[8 - explanationStep], true);
+          explanation += ">wheel2"
+          scrambler2(rotations[8 - explanationStep], true)
         }
         else if (wheelOrder[8 - explanationStep] == 3) {
-          explanation += ">scram3"
-          scrambler3(rotations[8 - explanationStep], true);
+          explanation += ">wheel3"
+          scrambler3(rotations[8 - explanationStep], true)
         }
         explanation += "R>" + alphabetize(letter)
         clearText()
@@ -1253,7 +1358,7 @@ onInput("l", () => {
       else if (explanationStep == 10) {
         rotate()
         updateScramblers()
-        explanationText("scrams rotate")
+        explanationText("wheels rotate")
         explanationStep++
       }
   
@@ -1316,42 +1421,58 @@ onInput("l", () => {
     }
   }
   else if (level == 2) {
-    //check if it's on plug 1 selector thingy
+    //check if it's on plug 1 select or clear thingies
     if (getFirst(cursor).x == getFirst(plugTile1).x && getFirst(cursor).y == getFirst(plugTile1).y) {
       plugSelected = 1
     }
-    //check if it's on plug 2 selector thingy
+      
+    else if (getFirst(cursor).x == getAll(redX)[0].x && getFirst(cursor).y == getAll(redX)[0].y) {
+      plug1 = 0
+      plug2 = 0
+      updateKeyboard(0, 3, 0)
+    }
+      
+    //check if it's on plug 2 select or clear thingies
     else if (getFirst(cursor).x == getFirst(plugTile2).x && getFirst(cursor).y == getFirst(plugTile2).y) {
       plugSelected = 2
     }
-    //check if it's on a letter
-    for (let letterChecked = 1; letterChecked <= 26; letterChecked++){
-      if (getFirst(cursor).x == getFirst(alphabetize(letterChecked)).x && getFirst(cursor).y == getFirst(alphabetize(letterChecked)).y) {
-        if (plugSelected == 1) {
-          if (plug1 == 0) {
-            plug1 = letterChecked
-          }
-          else if (plug2 == 0) {
-            plug2 = letterChecked
-          }
-          else {
-            plug1 = letterChecked
-            plug2 = 0
-          }
-        }
-        else if (plugSelected == 2) {
-          if (plug3 == 0) {
-            plug3 = letterChecked
-          }
-          else if (plug4 == 0) {
-            plug4 = letterChecked
-          }
-          else {
-            plug3 = letterChecked
-            plug4 = 0
-          }
-        }
+      
+    else if (getFirst(cursor).x == getAll(redX)[1].x && getFirst(cursor).y == getAll(redX)[1].y) {
+      plug3 = 0
+      plug4 = 0
       updateKeyboard(0, 3, 0)
+    }
+    
+    //check if it's on a letter and that it isn't already part of a plug
+    else {
+      for (let letterChecked = 1; letterChecked <= 26; letterChecked++){
+        if (getFirst(cursor).x == getFirst(alphabetize(letterChecked)).x && getFirst(cursor).y == getFirst(alphabetize(letterChecked)).y && (letterChecked != plug1 && letterChecked != plug2 && letterChecked != plug3 && letterChecked != plug4)) {
+          if (plugSelected == 1) {
+            if (plug1 == 0) {
+              plug1 = letterChecked
+            }
+            else if (plug2 == 0) {
+              plug2 = letterChecked
+            }
+            else {
+              plug1 = letterChecked
+              plug2 = 0
+            }
+          }
+          else if (plugSelected == 2) {
+            if (plug3 == 0) {
+              plug3 = letterChecked
+            }
+            else if (plug4 == 0) {
+              plug4 = letterChecked
+            }
+            else {
+              plug3 = letterChecked
+              plug4 = 0
+            }
+          }
+        updateKeyboard(0, 3, 0)
+        }
       }
     }
   }
@@ -1382,16 +1503,30 @@ onInput("l", () => {
       else {
         explain = true
         safeClearTile(0, 1, false)
-        addSprite(0, 1, plugTile2)
+        addSprite(0, 1, greenCircle)
       }
+    }
+  }
+  else if (level == 4) {
+    if (getFirst(cursor).x == getFirst(enigma).x) {
+      updateLevel(3)
+    }
+    else if (getFirst(cursor).x == getFirst(note).x) {
+      updateLevel(5)
     }
   }
 })
 
 //exit to level select
 onInput("j", () => {
-  updateLevel(3)
+  if (level <= 2) {
+    updateLevel(3)
+  }
+  else if (level != 4) {
+    updateLevel(4)
+  }
 })
 
 //initialize
-updateLevel(3)
+updateLevel(4)
+
