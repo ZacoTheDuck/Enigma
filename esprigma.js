@@ -907,21 +907,29 @@ function updateLevel(inputLevel) {
   clearText()
   level = inputLevel
   setMap(levels[level]) //make it look nice
-  if (level == 0) { 
+  if (level == 0) {
     updateKeyboard(0, 8, 1)
     updateScramblers()
+    if (ciphertext.length != 0) {
+      addText(ciphertext, {
+        x: 3,
+        y: 0,
+        color: color`3`
+      })
+      addSprite((getFirst(decapitalize(ciphertext.charAt(ciphertext.length - 1)))).x, (getFirst(decapitalize(ciphertext.charAt(ciphertext.length - 1)))).y, light)
+    }
   }
   if (level == 1) {
     updateScramblers()
   }
-  if (level == 2) { 
+  if (level == 2) {
     updateKeyboard(0, 3, 0)
-    addText("PLUG 1", { 
+    addText("PLUG 1", {
       x: 2,
       y: 3,
       color: color`5`
     })
-    addText("PLUG 2", { 
+    addText("PLUG 2", {
       x: 2,
       y: 5,
       color: color`D`
@@ -931,16 +939,53 @@ function updateLevel(inputLevel) {
     addSprite(0, 0, cursor)
     if (explain == true) {
       addSprite(0, 1, greenCircle)
-    }
-    else {
+    } else {
       addSprite(0, 1, redX)
     }
   }
   if (level == 4) {
     setBackground(table)
-  }
-  else {
+  } else {
     setBackground(blank)
+  }
+  if (level == 5) {
+    if (tutorialLevel == 0) {
+      addText("Encode:", {
+        x: 1,
+        y: 1,
+        color: color`0`
+      })
+      addText("enigma", {
+        x: 1,
+        y: 2,
+        color: color`0`
+      })
+      addText("Order: 1, 2, 3", {
+        x: 1,
+        y: 4,
+        color: color`0`
+      })
+      addText("Rotation: a,a,a", {
+        x: 1,
+        y: 5,
+        color: color`0`
+      })
+      addText("Plugs: None", {
+        x: 1,
+        y: 6,
+        color: color`0`
+      })
+    }
+    addText("Wheel order and", {
+      x: 1,
+      y: 14,
+      color: color`0`
+    })
+    addText("rotation are R to L", {
+      x: 1,
+      y: 15,
+      color: color`0`
+    })
   }
 }
 
@@ -950,8 +995,7 @@ function safeClearTile(x, y, keepLetters) {
   if (keepLetters == true) {
     let spritesToRemove = getTile(x, y).filter(sprite => sprite.type != cursor && sprite.type != button && (sprite.type.charCodeAt(0) < 97 || sprite.type.charCodeAt(0) > 122))
     spritesToRemove.forEach(sprite => sprite.remove())
-  }
-  else {
+  } else {
     let spritesToRemove = getTile(x, y).filter(sprite => sprite.type != cursor && sprite.type != button)
     spritesToRemove.forEach(sprite => sprite.remove())
   }
@@ -960,16 +1004,16 @@ function safeClearTile(x, y, keepLetters) {
 const alphabet = "abcdefghijklmnopqrstuvwxyz" //it's just the alphabet.
 const alphabetCapital = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" //alphabet but capitalized
 //number to letter
-function alphabetize(inNumber) {return alphabet.charAt(inNumber - 1)}
+function alphabetize(inNumber) { return alphabet.charAt(inNumber - 1) }
 //letter to number
-function dealphabetize(inCharacter) {return (alphabet.indexOf(inCharacter) + 1)}
-//makes a lowercase letter capital
-function capitalize(inCharacter) {return (alphabetCapital.charAt(alphabet.indexOf(inCharacter)))}
+function dealphabetize(inCharacter) { return (alphabet.indexOf(inCharacter) + 1) }
+//makes a lowercase letter uppercase
+function capitalize(inCharacter) { return (alphabetCapital.charAt(alphabet.indexOf(inCharacter))) }
+//makes an uppercase letter lowercase
+function decapitalize(inCharacter) { return (alphabet.charAt(alphabetCapital.indexOf(inCharacter))) }
 //puts a number within alphabet if it's at most 1 alphabet away
 function constrain(constrainee) {
-    if (constrainee < 1) {return constrainee + 26}
-    else if (constrainee > 26) {return constrainee - 26}
-    else return constrainee
+  if (constrainee < 1) { return constrainee + 26 } else if (constrainee > 26) { return constrainee - 26 } else return constrainee
 }
 
 var explain = false //boolean, when true machine goes step-by-step with explanations
@@ -978,7 +1022,8 @@ function explanationText(text) {
   addText(text, {
     x: 3,
     y: 0,
-    color: color`3`})
+    color: color`3`
+  })
 }
 var explanationStep = 0
 
@@ -986,6 +1031,9 @@ var wheelOrderConfig = 0 //for scrambler config, first scrambler to be swapped w
 var wheelNum = 0 //for scrambler config, number being selected/swapped. 0 for off
 
 var plugSelected = 0 //for plug config, 1 or 2, or 0 for off. plug kind you're messing with
+
+var tutorialLevel = 0 //step of the tutorial user is on
+const tutorialObjective = ["AKXINU", ] //desired output of each tutorial step
 
 var letter //number value of inputted letter, 1-26
 
@@ -1007,82 +1055,71 @@ const reflectList = [21, 17, 11, 10, 6, 25, 15, 26, 18, 22, 14, 3, 9, 23, 8, 24,
 var ciphertext = ""
 
 
-function scrambler1 (rot, reflected) {
+function scrambler1(rot, reflected) {
   //account for scrambler's rotation
   let scramLetter = constrain(letter + rot)
   //if explaining, add the path the signal takes
-  if (explain == true) {explanation += alphabetize(scramLetter)}
+  if (explain == true) { explanation += alphabetize(scramLetter) }
   //enigmatize that thang
-  if (reflected == false) {letter = scramList1[scramLetter - 1] - rot}
-  else {letter = scramList1.indexOf(scramLetter) + 1 - rot}
+  if (reflected == false) { letter = scramList1[scramLetter - 1] - rot } else { letter = scramList1.indexOf(scramLetter) + 1 - rot }
   //there's only so much alphabet
   letter = constrain(letter)
 }
 
-function scrambler2 (rot, reflected) {
+function scrambler2(rot, reflected) {
   let scramLetter = constrain(letter + rot)
-  if (explain == true) {explanation += alphabetize(scramLetter)}
-  if (reflected == false) {letter = scramList2[scramLetter - 1] - rot}
-  else {letter = scramList2.indexOf(scramLetter) + 1 - rot}
+  if (explain == true) { explanation += alphabetize(scramLetter) }
+  if (reflected == false) { letter = scramList2[scramLetter - 1] - rot } else { letter = scramList2.indexOf(scramLetter) + 1 - rot }
   letter = constrain(letter)
 }
 
-function scrambler3 (rot, reflected) {
+function scrambler3(rot, reflected) {
   let scramLetter = constrain(letter + rot)
-  if (explain == true) {explanation += alphabetize(scramLetter)}
-  if (reflected == false) {letter = scramList3[scramLetter - 1] - rot}
-  else {letter = scramList3.indexOf(scramLetter) + 1 - rot}
+  if (explain == true) { explanation += alphabetize(scramLetter) }
+  if (reflected == false) { letter = scramList3[scramLetter - 1] - rot } else { letter = scramList3.indexOf(scramLetter) + 1 - rot }
   letter = constrain(letter)
 }
 
 function plugboard() {
-    if (letter == plug1) {letter = plug2}
-    else if (letter == plug2) {letter = plug1}
-    else if (letter == plug3) {letter = plug4}
-    else if (letter == plug4) {letter = plug3}
+  if (letter == plug1) { letter = plug2 } else if (letter == plug2) { letter = plug1 } else if (letter == plug3) { letter = plug4 } else if (letter == plug4) { letter = plug3 }
 }
 
 function scramble(reflected) {
-    for (let letterPos = 0 + (2 * reflected); letterPos < 3 && letterPos >= reflected - 1; letterPos += 1 - (2 * reflected)) {
-      //check scrambler of current position, execute, change position, repeat three times.
-      //if reflected true, start at third scrambler and go backwards
-        if (wheelOrder[letterPos] == 1) {
-          scrambler1(rotations[letterPos], reflected)
-        }
-        else if (wheelOrder[letterPos] == 2) {
-          scrambler2(rotations[letterPos], reflected)
-        }
-        else if (wheelOrder[letterPos] == 3) {
-          scrambler3(rotations[letterPos], reflected)
-        }
+  for (let letterPos = 0 + (2 * reflected); letterPos < 3 && letterPos >= reflected - 1; letterPos += 1 - (2 * reflected)) {
+    //check scrambler of current position, execute, change position, repeat three times.
+    //if reflected true, start at third scrambler and go backwards
+    if (wheelOrder[letterPos] == 1) {
+      scrambler1(rotations[letterPos], reflected)
+    } else if (wheelOrder[letterPos] == 2) {
+      scrambler2(rotations[letterPos], reflected)
+    } else if (wheelOrder[letterPos] == 3) {
+      scrambler3(rotations[letterPos], reflected)
     }
+  }
 }
 
 function reflector() {
-    if (reflectList.indexOf(letter) % 2 == 0) {letter = reflectList[reflectList.indexOf(letter) + 1];} //if letter's position in array is even, move to next index
-    else {letter = reflectList[reflectList.indexOf(letter) - 1]} //if letter's position in array is odd, move down an index
+  if (reflectList.indexOf(letter) % 2 == 0) { letter = reflectList[reflectList.indexOf(letter) + 1]; } //if letter's position in array is even, move to next index
+  else { letter = reflectList[reflectList.indexOf(letter) - 1] } //if letter's position in array is odd, move down an index
 }
 
-function rotate(){
-    if (rotations[0] != 25) {rotations[0]++}
-    else {
-        rotations[0] = 0
-        if (rotations[1] != 25) {rotations[1]++}
-        else {
-            rotations[1] = 0
-            if (rotations[2] != 25) {rotations[2]++}
-            else {rotations[2] = 0}
-        }
+function rotate() {
+  if (rotations[0] != 25) { rotations[0]++ } else {
+    rotations[0] = 0
+    if (rotations[1] != 25) { rotations[1]++ } else {
+      rotations[1] = 0
+      if (rotations[2] != 25) { rotations[2]++ } else { rotations[2] = 0 }
     }
+  }
 }
 
 function executeEnigma() {
-    plugboard()
-    scramble(false)
-    reflector()
-    scramble(true)
-    plugboard()
-    rotate()
+  plugboard()
+  scramble(false)
+  reflector()
+  scramble(true)
+  plugboard()
+  rotate()
 }
 
 //change letters on scramblers to match rotations
@@ -1090,34 +1127,30 @@ function updateScramblers() {
   if (level == 0) {
     for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
       for (let scramblerY = 1; scramblerY <= 3; scramblerY++) {
-        safeClearTile((8-(2*scramblerNum)), scramblerY, false)
+        safeClearTile((8 - (2 * scramblerNum)), scramblerY, false)
         if (scramblerY == 1) {
-          addSprite((8-(2*scramblerNum)), 1, scramTop)
+          addSprite((8 - (2 * scramblerNum)), 1, scramTop)
+        } else if (scramblerY == 2) {
+          addSprite((8 - (2 * scramblerNum)), 2, scramMid)
+        } else {
+          addSprite((8 - (2 * scramblerNum)), 3, scramBot)
         }
-        else if (scramblerY == 2) {
-          addSprite((8-(2*scramblerNum)), 2, scramMid)
-        }
-        else {
-          addSprite((8-(2*scramblerNum)), 3, scramBot)
-        }
-        addSprite((8-(2*scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum]+3-scramblerY)))
+        addSprite((8 - (2 * scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum] + 3 - scramblerY)))
       }
     }
   }
   if (level == 1) {
-      for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
-        for (let scramblerY = 2; scramblerY <= 4; scramblerY++) {
-        safeClearTile((8-(3*scramblerNum)), scramblerY, false)
+    for (let scramblerNum = 0; scramblerNum <= 2; scramblerNum++) {
+      for (let scramblerY = 2; scramblerY <= 4; scramblerY++) {
+        safeClearTile((8 - (3 * scramblerNum)), scramblerY, false)
         if (scramblerY == 2) {
-          addSprite((8-(3*scramblerNum)), 2, scramTop)
+          addSprite((8 - (3 * scramblerNum)), 2, scramTop)
+        } else if (scramblerY == 3) {
+          addSprite((8 - (3 * scramblerNum)), 3, scramMid)
+        } else {
+          addSprite((8 - (3 * scramblerNum)), 4, scramBot)
         }
-        else if (scramblerY == 3) {
-          addSprite((8-(3*scramblerNum)), 3, scramMid)
-        }
-        else {
-          addSprite((8-(3*scramblerNum)), 4, scramBot)
-        }
-        addSprite((8-(3*scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum]+4-scramblerY)))
+        addSprite((8 - (3 * scramblerNum)), scramblerY, alphabetize(constrain(rotations[scramblerNum] + 4 - scramblerY)))
       }
     }
     safeClearTile(8, 1, false)
@@ -1136,57 +1169,57 @@ function updateScramblers() {
 //third input is the index of the letters in getAll, so the plugs go on the right spot
 function updateKeyboard(x, y, letterIndex) {
   addSprite(x, y, button)
-  addSprite(x+1, y, button)
-  addSprite(x+2, y, button)
-  addSprite(x+3, y, button)
-  addSprite(x+4, y, button)
-  addSprite(x+5, y, button)
-  addSprite(x+6, y, button)
-  addSprite(x+7, y, button)
-  addSprite(x+8, y, button)
-  addSprite(x+9, y, button)
-  addSprite(x+0, y+1, button)
-  addSprite(x+1, y+1, button)
-  addSprite(x+2, y+1, button)
-  addSprite(x+3, y+1, button)
-  addSprite(x+4, y+1, button)
-  addSprite(x+5, y+1, button)
-  addSprite(x+6, y+1, button)
-  addSprite(x+7, y+1, button)
-  addSprite(x+8, y+1, button)
-  addSprite(x+1, y+2, button)
-  addSprite(x+2, y+2, button)
-  addSprite(x+3, y+2, button)
-  addSprite(x+4, y+2, button)
-  addSprite(x+5, y+2, button)
-  addSprite(x+6, y+2, button)
-  addSprite(x+7, y+2, button)
+  addSprite(x + 1, y, button)
+  addSprite(x + 2, y, button)
+  addSprite(x + 3, y, button)
+  addSprite(x + 4, y, button)
+  addSprite(x + 5, y, button)
+  addSprite(x + 6, y, button)
+  addSprite(x + 7, y, button)
+  addSprite(x + 8, y, button)
+  addSprite(x + 9, y, button)
+  addSprite(x + 0, y + 1, button)
+  addSprite(x + 1, y + 1, button)
+  addSprite(x + 2, y + 1, button)
+  addSprite(x + 3, y + 1, button)
+  addSprite(x + 4, y + 1, button)
+  addSprite(x + 5, y + 1, button)
+  addSprite(x + 6, y + 1, button)
+  addSprite(x + 7, y + 1, button)
+  addSprite(x + 8, y + 1, button)
+  addSprite(x + 1, y + 2, button)
+  addSprite(x + 2, y + 2, button)
+  addSprite(x + 3, y + 2, button)
+  addSprite(x + 4, y + 2, button)
+  addSprite(x + 5, y + 2, button)
+  addSprite(x + 6, y + 2, button)
+  addSprite(x + 7, y + 2, button)
   safeClearTile(x, y, true)
-  safeClearTile(x+1, y, true)
-  safeClearTile(x+2, y, true)
-  safeClearTile(x+3, y, true)
-  safeClearTile(x+4, y, true)
-  safeClearTile(x+5, y, true)
-  safeClearTile(x+6, y, true)
-  safeClearTile(x+7, y, true)
-  safeClearTile(x+8, y, true)
-  safeClearTile(x+9, y, true)
-  safeClearTile(x+0, y+1, true)
-  safeClearTile(x+1, y+1, true)
-  safeClearTile(x+2, y+1, true)
-  safeClearTile(x+3, y+1, true)
-  safeClearTile(x+4, y+1, true)
-  safeClearTile(x+5, y+1, true)
-  safeClearTile(x+6, y+1, true)
-  safeClearTile(x+7, y+1, true)
-  safeClearTile(x+8, y+1, true)
-  safeClearTile(x+1, y+2, true)
-  safeClearTile(x+2, y+2, true)
-  safeClearTile(x+3, y+2, true)
-  safeClearTile(x+4, y+2, true)
-  safeClearTile(x+5, y+2, true)
-  safeClearTile(x+6, y+2, true)
-  safeClearTile(x+7, y+2, true)
+  safeClearTile(x + 1, y, true)
+  safeClearTile(x + 2, y, true)
+  safeClearTile(x + 3, y, true)
+  safeClearTile(x + 4, y, true)
+  safeClearTile(x + 5, y, true)
+  safeClearTile(x + 6, y, true)
+  safeClearTile(x + 7, y, true)
+  safeClearTile(x + 8, y, true)
+  safeClearTile(x + 9, y, true)
+  safeClearTile(x + 0, y + 1, true)
+  safeClearTile(x + 1, y + 1, true)
+  safeClearTile(x + 2, y + 1, true)
+  safeClearTile(x + 3, y + 1, true)
+  safeClearTile(x + 4, y + 1, true)
+  safeClearTile(x + 5, y + 1, true)
+  safeClearTile(x + 6, y + 1, true)
+  safeClearTile(x + 7, y + 1, true)
+  safeClearTile(x + 8, y + 1, true)
+  safeClearTile(x + 1, y + 2, true)
+  safeClearTile(x + 2, y + 2, true)
+  safeClearTile(x + 3, y + 2, true)
+  safeClearTile(x + 4, y + 2, true)
+  safeClearTile(x + 5, y + 2, true)
+  safeClearTile(x + 6, y + 2, true)
+  safeClearTile(x + 7, y + 2, true)
   if (plug1 != 0) {
     addSprite((getAll(alphabetize(plug1))[letterIndex]).x, (getAll(alphabetize(plug1))[letterIndex]).y, plugTile1)
   }
@@ -1204,16 +1237,22 @@ function updateKeyboard(x, y, letterIndex) {
 
 //WASD
 onInput("w", () => {
-  getFirst(cursor).y -= 1
+  if (level != 5) {
+    getFirst(cursor).y -= 1
+  }
 })
 onInput("a", () => {
-  getFirst(cursor).x -= 1
+  if (level != 5) {
+    getFirst(cursor).x -= 1
+  }
 })
 onInput("s", () => {
-  getFirst(cursor).y += 1
+  if (level != 5) {
+    getFirst(cursor).y += 1
+  }
 })
 onInput("d", () => {
-  if (level != 3) {
+  if (level != 5 && level != 3) {
     getFirst(cursor).x += 1
   }
 })
@@ -1224,7 +1263,7 @@ onInput("l", () => {
   if (level == 0) {
     if (explain == false) {
       letter = 0
-      for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
+      for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++) {
         //check if cursor x and y are the same as letter x and y
         if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
           letter = letterChecked
@@ -1232,7 +1271,7 @@ onInput("l", () => {
       }
       //if you aren't on blank space
       if (letter != 0) {
-          executeEnigma()
+        executeEnigma()
         //get rid of previous light, if there is one
         if (getAll(light).length != 0) {
           getFirst(light).remove()
@@ -1242,45 +1281,41 @@ onInput("l", () => {
         //start list of outputs or graft new output onto list
         if (ciphertext.length == 0) {
           ciphertext = capitalize(alphabetize(letter))
-        }
-        else ciphertext = ciphertext + capitalize(alphabetize(letter))
+        } else ciphertext = ciphertext + capitalize(alphabetize(letter))
         //if it's too long to fit, trim the first letter
-        if (ciphertext.length >= 15) {ciphertext = ciphertext.replace(ciphertext.charAt(0), "")}
+        if (ciphertext.length >= 15) { ciphertext = ciphertext.replace(ciphertext.charAt(0), "") }
         //list outputs
         addText(ciphertext, {
-        x: 3,
-        y: 0,
-        color: color`3`})
-      
+          x: 3,
+          y: 0,
+          color: color`3`
+        })
+
         updateScramblers()
       }
     }
-    
+
     //when explain is true, slower and with explanations
     else {
       if (explanationStep == 0) {
         letter = 0
-        for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++){
+        for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++) {
           //check if cursor x and y are the same as letter x and y
           if (getFirst(cursor).x == getAll(alphabetize(letterChecked))[1].x && getFirst(cursor).y == getAll(alphabetize(letterChecked))[1].y) {
             letter = letterChecked
           }
         }
-        
+
         //if you aren't on blank space
         if (letter != 0) {
-          //get rid of previous light, if there is one
-          if (getAll(light).length != 0) {
-            getFirst(light).remove()
-          }
-        //get rid of line of ciphertext, if it's there
-        clearText()
-        explanationStep++
+          //get rid of line of ciphertext, if it's there
+          clearText()
+          explanationStep++
         }
       }
-  
+
       //should follow directly after step 0, if step 0's conditions were met
-      if (explanationStep == 1) {  
+      if (explanationStep == 1) {
         //execute enigma but with pauses and explanations
         explanation = alphabetize(letter) + ">plug>"
         plugboard()
@@ -1289,19 +1324,17 @@ onInput("l", () => {
         explanationText(explanation)
         explanationStep++
       }
-  
+
       //like scramble function, but with explanationStep - 2 instead of letterPos
       else if (explanationStep >= 2 && explanationStep <= 4) {
         explanation = alphabetize(letter)
         if (wheelOrder[explanationStep - 2] == 1) {
           explanation += ">wheel1"
           scrambler1(rotations[explanationStep - 2], false)
-        }
-        else if (wheelOrder[explanationStep - 2] == 2) {
+        } else if (wheelOrder[explanationStep - 2] == 2) {
           explanation += ">wheel2"
           scrambler2(rotations[explanationStep - 2], false)
-        }
-        else if (wheelOrder[explanationStep - 2] == 3) {
+        } else if (wheelOrder[explanationStep - 2] == 3) {
           explanation += ">wheel3"
           scrambler3(rotations[explanationStep - 2], false)
         }
@@ -1309,9 +1342,7 @@ onInput("l", () => {
         clearText()
         explanationText(explanation)
         explanationStep++
-      }
-  
-      else if (explanationStep == 5) {
+      } else if (explanationStep == 5) {
         explanation = alphabetize(letter) + ">reflector>"
         reflector()
         explanation += alphabetize(letter)
@@ -1319,19 +1350,17 @@ onInput("l", () => {
         explanationText(explanation)
         explanationStep++
       }
-  
+
       //like reflected scramble, but with 8 - explanationStep instead of letterPos
       else if (explanationStep >= 6 && explanationStep <= 8) {
         explanation = alphabetize(letter)
         if (wheelOrder[8 - explanationStep] == 1) {
           explanation += ">wheel1"
           scrambler1(rotations[8 - explanationStep], true)
-        }
-        else if (wheelOrder[8 - explanationStep] == 2) {
+        } else if (wheelOrder[8 - explanationStep] == 2) {
           explanation += ">wheel2"
           scrambler2(rotations[8 - explanationStep], true)
-        }
-        else if (wheelOrder[8 - explanationStep] == 3) {
+        } else if (wheelOrder[8 - explanationStep] == 3) {
           explanation += ">wheel3"
           scrambler3(rotations[8 - explanationStep], true)
         }
@@ -1339,58 +1368,60 @@ onInput("l", () => {
         clearText()
         explanationText(explanation)
         explanationStep++
-      }
-  
-      else if (explanationStep == 9) {  
-        //execute enigma but with pauses and explanations
+      } else if (explanationStep == 9) {
+        //plugboard
         explanation = alphabetize(letter) + ">plug>"
         plugboard()
         explanation += capitalize(alphabetize(letter))
-        
+
+        //get rid of previous light, if there is one
+        if (getAll(light).length != 0) {
+          getFirst(light).remove()
+        }
         //add light to output letter
         addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
-        
+        //graft output onto ciphertext
+        if (ciphertext.length == 0) {
+          ciphertext = capitalize(alphabetize(letter))
+        } else ciphertext = ciphertext + capitalize(alphabetize(letter))
+        //if it's too long to fit, trim the first letter
+        if (ciphertext.length >= 15) { ciphertext = ciphertext.replace(ciphertext.charAt(0), "") }
+
         clearText()
         explanationText(explanation)
         explanationStep++
-      }
-  
-      else if (explanationStep == 10) {
+      } else if (explanationStep == 10) {
         rotate()
         updateScramblers()
         explanationText("wheels rotate")
         explanationStep++
-      }
-  
-      else if (explanationStep == 11) {
+      } else if (explanationStep == 11) {
         //start list of outputs or graft new output onto list
         clearText()
-        if (ciphertext.length == 0) {
-          ciphertext = capitalize(alphabetize(letter))
-        }
-        else ciphertext = ciphertext + capitalize(alphabetize(letter))
-        //if it's too long to fit, trim the first letter
-        if (ciphertext.length >= 15) {ciphertext = ciphertext.replace(ciphertext.charAt(0), "")}
         //list outputs
         addText(ciphertext, {
-        x: 3,
-        y: 0,
-        color: color`3`})
+          x: 3,
+          y: 0,
+          color: color`3`
+        })
         explanationStep = 0
       }
     }
-  }
-  
-  else if (level == 1) {
-  //check if it's on arrows and scroll scrambler rotation
-    for (let leftChecked = 0; leftChecked <= 2; leftChecked++){
+
+    //check if ciphertext contains the current objective for the tutorial
+    if (ciphertext.includes(tutorialObjective[tutorialLevel]) == true) {
+      tutorialLevel++
+    }
+  } else if (level == 1) {
+    //check if it's on arrows and scroll scrambler rotation
+    for (let leftChecked = 0; leftChecked <= 2; leftChecked++) {
       //check if cursor x and y are the same as left arrow x and y
       if (getFirst(cursor).x == getAll(arrowL)[2 - leftChecked].x && getFirst(cursor).y == getAll(arrowL)[2 - leftChecked].y) {
         rotations[leftChecked] = constrain(rotations[leftChecked]) - 1
         updateScramblers()
       }
     }
-    for (let rightChecked = 0; rightChecked <= 2; rightChecked++){
+    for (let rightChecked = 0; rightChecked <= 2; rightChecked++) {
       //check if cursor x and y are the same as right arrow x and y
       if (getFirst(cursor).x == getAll(arrowR)[2 - rightChecked].x && getFirst(cursor).y == getAll(arrowR)[2 - rightChecked].y) {
         rotations[rightChecked] = constrain(rotations[rightChecked] + 2) - 1
@@ -1419,66 +1450,53 @@ onInput("l", () => {
         exit = true
       }
     }
-  }
-  else if (level == 2) {
+  } else if (level == 2) {
     //check if it's on plug 1 select or clear thingies
     if (getFirst(cursor).x == getFirst(plugTile1).x && getFirst(cursor).y == getFirst(plugTile1).y) {
       plugSelected = 1
-    }
-      
-    else if (getFirst(cursor).x == getAll(redX)[0].x && getFirst(cursor).y == getAll(redX)[0].y) {
+    } else if (getFirst(cursor).x == getAll(redX)[0].x && getFirst(cursor).y == getAll(redX)[0].y) {
       plug1 = 0
       plug2 = 0
       updateKeyboard(0, 3, 0)
     }
-      
+
     //check if it's on plug 2 select or clear thingies
     else if (getFirst(cursor).x == getFirst(plugTile2).x && getFirst(cursor).y == getFirst(plugTile2).y) {
       plugSelected = 2
-    }
-      
-    else if (getFirst(cursor).x == getAll(redX)[1].x && getFirst(cursor).y == getAll(redX)[1].y) {
+    } else if (getFirst(cursor).x == getAll(redX)[1].x && getFirst(cursor).y == getAll(redX)[1].y) {
       plug3 = 0
       plug4 = 0
       updateKeyboard(0, 3, 0)
     }
-    
+
     //check if it's on a letter and that it isn't already part of a plug
     else {
-      for (let letterChecked = 1; letterChecked <= 26; letterChecked++){
+      for (let letterChecked = 1; letterChecked <= 26; letterChecked++) {
         if (getFirst(cursor).x == getFirst(alphabetize(letterChecked)).x && getFirst(cursor).y == getFirst(alphabetize(letterChecked)).y && (letterChecked != plug1 && letterChecked != plug2 && letterChecked != plug3 && letterChecked != plug4)) {
           if (plugSelected == 1) {
             if (plug1 == 0) {
               plug1 = letterChecked
-            }
-            else if (plug2 == 0) {
+            } else if (plug2 == 0) {
               plug2 = letterChecked
-            }
-            else {
+            } else {
               plug1 = letterChecked
               plug2 = 0
             }
-          }
-          else if (plugSelected == 2) {
+          } else if (plugSelected == 2) {
             if (plug3 == 0) {
               plug3 = letterChecked
-            }
-            else if (plug4 == 0) {
+            } else if (plug4 == 0) {
               plug4 = letterChecked
-            }
-            else {
+            } else {
               plug3 = letterChecked
               plug4 = 0
             }
           }
-        updateKeyboard(0, 3, 0)
+          updateKeyboard(0, 3, 0)
         }
       }
     }
-  }
-
-    
-  else if (level == 3) {
+  } else if (level == 3) {
     //check which level the cursor is on and go to it
     //enigma
     if (getFirst(cursor).y == getAll(light)[0].y) {
@@ -1499,19 +1517,16 @@ onInput("l", () => {
         explain = false
         safeClearTile(0, 1, false)
         addSprite(0, 1, redX) //just a green circle for on
-      }
-      else {
+      } else {
         explain = true
         safeClearTile(0, 1, false)
         addSprite(0, 1, greenCircle)
       }
     }
-  }
-  else if (level == 4) {
+  } else if (level == 4) {
     if (getFirst(cursor).x == getFirst(enigma).x) {
       updateLevel(3)
-    }
-    else if (getFirst(cursor).x == getFirst(note).x) {
+    } else if (getFirst(cursor).x == getFirst(note).x) {
       updateLevel(5)
     }
   }
@@ -1521,12 +1536,10 @@ onInput("l", () => {
 onInput("j", () => {
   if (level <= 2) {
     updateLevel(3)
-  }
-  else if (level != 4) {
+  } else if (level != 4) {
     updateLevel(4)
   }
 })
 
 //initialize
 updateLevel(4)
-
