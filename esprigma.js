@@ -870,7 +870,7 @@ asdfghjkl.
 DDDDDDDDDD
 qwertyuiop
 asdfghjkl.
-Czxcvbnm..`, //main machine
+Czxcvbnm.X`, //main machine
   map`
 ...........
 ...........
@@ -965,7 +965,7 @@ function updateLevel(inputLevel) {
         y: 4,
         color: color`0`
       })
-      addText("Rotation: a,a,a", {
+      addText("Rotation: a, a, a", {
         x: 1,
         y: 5,
         color: color`0`
@@ -976,6 +976,124 @@ function updateLevel(inputLevel) {
         color: color`0`
       })
     }
+    else if (tutorialLevel == 1) {
+      addSprite(0, 0, greenCircle)
+      addText("AKXINU", {
+        x: 4,
+        y: 0,
+        color: color`0`
+      })
+
+      addText("Decode:", {
+        x: 1,
+        y: 4,
+        color: color`0`
+      })
+      addText("DQBDNKVTTP", {
+        x: 1,
+        y: 5,
+        color: color`0`
+      })
+      addText("Order: 1, 2, 3", {
+        x: 1,
+        y: 7,
+        color: color`0`
+      })
+      addText("Rotation: w, m, u", {
+        x: 1,
+        y: 8,
+        color: color`0`
+      })
+      addText("Plugs: None", {
+        x: 1,
+        y: 9,
+        color: color`0`
+      })
+    }
+    else if (tutorialLevel == 2) {
+      addSprite(0, 0, greenCircle)
+      addText("AKXINU", {
+        x: 4,
+        y: 0,
+        color: color`0`
+      })
+      addText("helloworld", {
+        x: 4,
+        y: 1,
+        color: color`0`
+      })
+      
+      addText("Encode:", {
+        x: 1,
+        y: 4,
+        color: color`0`
+      })
+      addText("secretsgohere", {
+        x: 1,
+        y: 5,
+        color: color`0`
+      })
+      addText("Order: 1, 2, 3", {
+        x: 1,
+        y: 7,
+        color: color`0`
+      })
+      addText("Rotation: n, o, m", {
+        x: 1,
+        y: 8,
+        color: color`0`
+      })
+      addText("Plugs: e > z", {
+        x: 1,
+        y: 9,
+        color: color`0`
+      })
+    }
+    else if (tutorialLevel == 3) {
+      addSprite(0, 0, greenCircle)
+      addText("AKXINU", {
+        x: 4,
+        y: 0,
+        color: color`0`
+      })
+      addText("helloworld", {
+        x: 4,
+        y: 1,
+        color: color`0`
+      })
+      addText("ESGHAGZMKLVNC", {
+        x: 4,
+        y: 2,
+        color: color`0`
+      })
+      
+      addText("Decode:", {
+        x: 1,
+        y: 4,
+        color: color`0`
+      })
+      addText("WLJXGJJREQXFAWTB", {
+        x: 1,
+        y: 5,
+        color: color`0`
+      })
+      addText("Order: 3, 1, 2", {
+        x: 1,
+        y: 7,
+        color: color`0`
+      })
+      addText("Rotation: u, f, n", {
+        x: 1,
+        y: 8,
+        color: color`0`
+      })
+      addText("Plugs: f > o, i > c", {
+        x: 1,
+        y: 9,
+        color: color`0`
+      })
+    }
+    
     addText("Wheel order and", {
       x: 1,
       y: 14,
@@ -986,6 +1104,72 @@ function updateLevel(inputLevel) {
       y: 15,
       color: color`0`
     })
+    
+    if (tutorialLevel == 4) {
+      clearText()
+      addSprite(0, 0, greenCircle)
+      addText("AKXINU", {
+        x: 4,
+        y: 0,
+        color: color`0`
+      })
+      addText("helloworld", {
+        x: 4,
+        y: 1,
+        color: color`0`
+      })
+      addText("ESGHAGZMKLVNC", {
+        x: 4,
+        y: 2,
+        color: color`0`
+      })
+      
+      addText("Thanks for", {
+        x: 1,
+        y: 4,
+        color: color`0`
+      })
+      addText("playing!", {
+        x: 1,
+        y: 5,
+        color: color`0`
+      })
+      addText("There's no more", {
+        x: 1,
+        y: 7,
+        color: color`0`
+      })
+      addText("game, exactly,", {
+        x: 1,
+        y: 8,
+        color: color`0`
+      })
+      addText("but feel free to", {
+        x: 1,
+        y: 9,
+        color: color`0`
+      })
+      addText("use the machine", {
+        x: 1,
+        y: 10,
+        color: color`0`
+      })
+      addText("for your own", {
+        x: 1,
+        y: 11,
+        color: color`0`
+      })
+      addText("purposes. I won't", {
+        x: 1,
+        y: 12,
+        color: color`0`
+      })
+      addText("ask what they are.", {
+        x: 1,
+        y: 10,
+        color: color`0`
+      })
+    }
   }
 }
 
@@ -1033,7 +1217,7 @@ var wheelNum = 0 //for scrambler config, number being selected/swapped. 0 for of
 var plugSelected = 0 //for plug config, 1 or 2, or 0 for off. plug kind you're messing with
 
 var tutorialLevel = 0 //step of the tutorial user is on
-const tutorialObjective = ["AKXINU", ] //desired output of each tutorial step
+const tutorialObjective = ["AKXINU", "HELLOWORLD", "ESGHAGZMKLVNC", "THANKSFORPLAYING"] //desired output of each tutorial step
 
 var letter //number value of inputted letter, 1-26
 
@@ -1261,7 +1445,17 @@ onInput("d", () => {
 onInput("l", () => {
   //select input letter
   if (level == 0) {
-    if (explain == false) {
+    //check if it's on the clear button
+    if (getFirst(cursor).x == getFirst(redX).x && getFirst(cursor).y == getFirst(redX).y) {
+      //clear text at top
+      ciphertext = ""
+      clearText()
+      //remove light
+      if (getAll(light).length != 0) {
+        getFirst(light).remove()
+      }
+    }
+    else if (explain == false) {
       letter = 0
       for (let letterChecked = 1; letterChecked <= 26 && letter == 0; letterChecked++) {
         //check if cursor x and y are the same as letter x and y
