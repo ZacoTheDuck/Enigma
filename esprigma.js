@@ -2,7 +2,7 @@
 @title: Enigma
 @author: Ben Gertler
 @tags: ['simulation', 'sandbox']
-@addedOn: 2024-07-27
+@addedOn: 2024-08-21
 */
 
 //tile definitions
@@ -13,7 +13,7 @@ const divider = "D"
 const arrowL = "<"
 const arrowR = ">"
 const redX = "X"
-const greenCircle = "*"
+const checkmark = "*"
 const enigma = "E"
 const note = "N"
 const table = "T"
@@ -172,22 +172,22 @@ setLegend(
 ..33........33..
 .33..........33.
 ................`],
-  [greenCircle, bitmap`
+  [checkmark, bitmap`
 ................
-....DDDDDDDD....
-...DDDDDDDDDD...
-..DDDDDDDDDDDD..
-.DDDDDDDDDDDDDD.
-.DDDDDDDDDDDDDD.
-.DDDDDDDDDDDDDD.
-.DDDDDDDDDDDDDD.
-.DDDDDDDDDDDDDD.
-.DDDDDDDDDDDDDD.
-.DDDDDDDDDDDDDD.
-.DDDDDDDDDDDDDD.
-..DDDDDDDDDDDD..
-...DDDDDDDDDD...
-....DDDDDDDD....
+................
+................
+................
+.............D..
+............DD..
+...........DD...
+..........DD....
+..D......DD.....
+..DD....DD......
+...DD..DD.......
+....DDDD........
+.....DD.........
+................
+................
 ................`],
   [enigma, bitmap`
 ................
@@ -938,7 +938,7 @@ function updateLevel(inputLevel) {
   if (level == 3) {
     addSprite(0, 0, cursor)
     if (explain == true) {
-      addSprite(0, 1, greenCircle)
+      addSprite(0, 1, checkmark)
     } else {
       addSprite(0, 1, redX)
     }
@@ -977,7 +977,7 @@ function updateLevel(inputLevel) {
       })
     }
     else if (tutorialLevel == 1) {
-      addSprite(0, 0, greenCircle)
+      addSprite(0, 0, checkmark)
       addText("AKXINU", {
         x: 4,
         y: 0,
@@ -1011,7 +1011,7 @@ function updateLevel(inputLevel) {
       })
     }
     else if (tutorialLevel == 2) {
-      addSprite(0, 0, greenCircle)
+      addSprite(0, 0, checkmark)
       addText("AKXINU", {
         x: 4,
         y: 0,
@@ -1050,7 +1050,7 @@ function updateLevel(inputLevel) {
       })
     }
     else if (tutorialLevel == 3) {
-      addSprite(0, 0, greenCircle)
+      addSprite(0, 0, checkmark)
       addText("AKXINU", {
         x: 4,
         y: 0,
@@ -1107,7 +1107,7 @@ function updateLevel(inputLevel) {
     
     if (tutorialLevel == 4) {
       clearText()
-      addSprite(0, 0, greenCircle)
+      addSprite(0, 0, checkmark)
       addText("AKXINU", {
         x: 4,
         y: 0,
@@ -1139,7 +1139,7 @@ function updateLevel(inputLevel) {
         y: 7,
         color: color`0`
       })
-      addText("game, exactly,", {
+      addText('"game", exactly,', {
         x: 1,
         y: 8,
         color: color`0`
@@ -1166,7 +1166,7 @@ function updateLevel(inputLevel) {
       })
       addText("ask what they are.", {
         x: 1,
-        y: 10,
+        y: 13,
         color: color`0`
       })
     }
@@ -1237,6 +1237,7 @@ const scramList3 = [3, 23, 14, 1, 11, 6, 9, 2, 5, 18, 10, 24, 12, 13, 16, 21, 8,
 const reflectList = [21, 17, 11, 10, 6, 25, 15, 26, 18, 22, 14, 3, 9, 23, 8, 24, 5, 16, 13, 20, 7, 19, 2, 4, 12, 1] //even indexes go to the next on the array, odd go back (starting at 0)
 
 var ciphertext = ""
+var displayCiphertext = ""
 
 
 function scrambler1(rot, reflected) {
@@ -1449,6 +1450,7 @@ onInput("l", () => {
     if (getFirst(cursor).x == getFirst(redX).x && getFirst(cursor).y == getFirst(redX).y) {
       //clear text at top
       ciphertext = ""
+      displayCiphertext = ""
       clearText()
       //remove light
       if (getAll(light).length != 0) {
@@ -1475,11 +1477,15 @@ onInput("l", () => {
         //start list of outputs or graft new output onto list
         if (ciphertext.length == 0) {
           ciphertext = capitalize(alphabetize(letter))
-        } else ciphertext = ciphertext + capitalize(alphabetize(letter))
-        //if it's too long to fit, trim the first letter
-        if (ciphertext.length >= 15) { ciphertext = ciphertext.replace(ciphertext.charAt(0), "") }
+          displayCiphertext = capitalize(alphabetize(letter))
+        } else {
+          ciphertext = ciphertext + capitalize(alphabetize(letter))
+          displayCiphertext = displayCiphertext + capitalize(alphabetize(letter))
+        }
+        //if it's too long to fit, trim the first letter from the display
+        if (displayCiphertext.length >= 15) { displayCiphertext = displayCiphertext.replace(ciphertext.charAt(0), "") }
         //list outputs
-        addText(ciphertext, {
+        addText(displayCiphertext, {
           x: 3,
           y: 0,
           color: color`3`
@@ -1574,12 +1580,16 @@ onInput("l", () => {
         }
         //add light to output letter
         addSprite((getFirst(alphabetize(letter))).x, (getFirst(alphabetize(letter))).y, light)
-        //graft output onto ciphertext
+        //start list of outputs or graft new output onto list
         if (ciphertext.length == 0) {
           ciphertext = capitalize(alphabetize(letter))
-        } else ciphertext = ciphertext + capitalize(alphabetize(letter))
-        //if it's too long to fit, trim the first letter
-        if (ciphertext.length >= 15) { ciphertext = ciphertext.replace(ciphertext.charAt(0), "") }
+          displayCiphertext = capitalize(alphabetize(letter))
+        } else {
+          ciphertext = ciphertext + capitalize(alphabetize(letter))
+          displayCiphertext = displayCiphertext + capitalize(alphabetize(letter))
+        }
+        //if it's too long to fit, trim the first letter from the display
+        if (displayCiphertext.length >= 15) { displayCiphertext = displayCiphertext.replace(ciphertext.charAt(0), "") }
 
         clearText()
         explanationText(explanation)
@@ -1590,10 +1600,9 @@ onInput("l", () => {
         explanationText("wheels rotate")
         explanationStep++
       } else if (explanationStep == 11) {
-        //start list of outputs or graft new output onto list
         clearText()
         //list outputs
-        addText(ciphertext, {
+        addText(displayCiphertext, {
           x: 3,
           y: 0,
           color: color`3`
@@ -1710,11 +1719,11 @@ onInput("l", () => {
       if (explain == true) {
         explain = false
         safeClearTile(0, 1, false)
-        addSprite(0, 1, redX) //just a green circle for on
+        addSprite(0, 1, redX)
       } else {
         explain = true
         safeClearTile(0, 1, false)
-        addSprite(0, 1, greenCircle)
+        addSprite(0, 1, checkmark)
       }
     }
   } else if (level == 4) {
@@ -1729,6 +1738,22 @@ onInput("l", () => {
 //exit to level select
 onInput("j", () => {
   if (level <= 2) {
+    if (level == 0 && explain == true) {
+      if (explanationStep == 10) {
+        rotate()
+      }
+      explanationStep = 0
+      letter = 0
+    }
+    if (level == 2) {
+      plugSelected = 0
+      if (plug1 != 0 && plug2 == 0) {
+        plug1 = 0
+      }
+      if (plug3 != 0 && plug4 == 0) {
+        plug3 = 0
+      }
+    }
     updateLevel(3)
   } else if (level != 4) {
     updateLevel(4)
